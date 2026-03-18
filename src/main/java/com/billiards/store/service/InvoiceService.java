@@ -17,13 +17,16 @@ import com.billiards.store.repository.InvoiceRepository;
 public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final CodeGeneratorUtil codeGeneratorUtil;
+    private final PlaySessionService playSessionService;
 
     public InvoiceService(
         InvoiceRepository invoiceRepository,
-        CodeGeneratorUtil codeGeneratorUtil
+        CodeGeneratorUtil codeGeneratorUtil,
+        PlaySessionService playSessionService
     ) {
         this.invoiceRepository = invoiceRepository;
         this.codeGeneratorUtil = codeGeneratorUtil;
+        this.playSessionService = playSessionService;
     }
 
     public InvoiceResponseDto create(InvoiceRequestDto requestDto) {
@@ -31,6 +34,9 @@ public class InvoiceService {
         invoice.setInvoiceCode(
             codeGeneratorUtil.generateCode("INV", "invoice_code_seq")
         );
+
+        validateReferenceCode(requestDto.getSessionCode());
+
         invoice.setSessionCode(requestDto.getSessionCode());
         invoice.setTableFee(requestDto.getTableFee());
         invoice.setFnbFee(requestDto.getFnbFee());
@@ -75,6 +81,14 @@ public class InvoiceService {
         invoiceRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
         invoiceRepository.deleteById(id);
+    }
+
+    private void validateReferenceCode(String sessionCode) {
+        if (sessionCode == null || sessionCode.trim().isEmpty()) {
+            throw new ResourceNotFoundException("Session code cannot be empty");
+        } 
+        
+        playSessionService.findBySessionCode(sessionCode);
     }
 
     private InvoiceResponseDto convertToResponseDto(Invoice invoice) {

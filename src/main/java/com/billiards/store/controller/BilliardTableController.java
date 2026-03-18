@@ -87,9 +87,9 @@ public class BilliardTableController {
         ));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
-        billiardTableService.delete(id);
+    @DeleteMapping("/{tableCode}")
+    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable String tableCode) {
+        billiardTableService.delete(tableCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
                 "Billiard table deleted successfully",

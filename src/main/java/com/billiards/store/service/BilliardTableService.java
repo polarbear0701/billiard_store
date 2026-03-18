@@ -1,5 +1,6 @@
 package com.billiards.store.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,6 +34,10 @@ public class BilliardTableService {
         );
         table.setTableType(requestDto.getTableType());
         table.setTableStatus(requestDto.getTableStatus());
+        
+        if (requestDto.getPricePerHour().compareTo(BigDecimal.valueOf(0)) <= 0) {
+            throw new ResourceNotFoundException("Cannot have price smaller than or equal to 0");
+        }
         table.setPricePerHour(requestDto.getPricePerHour());
         
         BilliardTable savedTable = billiardTableRepository.save(table);
@@ -40,19 +45,19 @@ public class BilliardTableService {
     }
 
     public BilliardTableResponseDto findById(UUID id) {
-        BilliardTable table = billiardTableRepository.findById(id)
+        BilliardTable table = billiardTableRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Billiard table not found"));
         return convertToResponseDto(table);
     }
 
     public BilliardTableResponseDto findByTableCode(String tableCode) {
-        BilliardTable table = billiardTableRepository.findByTableCode(tableCode)
+        BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
             .orElseThrow(() -> new ResourceNotFoundException("No table associated with this table code. Please try again"));
         return convertToResponseDto(table);
     }
 
     public List<BilliardTableResponseDto> findAll() {
-        return billiardTableRepository.findAll().stream()
+        return billiardTableRepository.findByIsDeletedFalse().stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
@@ -69,10 +74,8 @@ public class BilliardTableService {
         return convertToResponseDto(updatedTable);
     }
 
-    public void delete(UUID id) {
-        billiardTableRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Billiard table not found"));
-        billiardTableRepository.deleteById(id);
+    public void delete(String tableCode) {
+        setTableToDelete(tableCode);
     }
 
     private BilliardTableResponseDto convertToResponseDto(BilliardTable table) {
@@ -86,5 +89,12 @@ public class BilliardTableService {
         dto.setCreatedBy(table.getCreatedBy());
         dto.setUpdatedBy(table.getUpdatedBy());
         return dto;
+    }
+
+    private void setTableToDelete(String tableCode) {
+        BilliardTable targetTable = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        targetTable.setIsDeleted(true);
+        billiardTableRepository.save(targetTable);
     }
 }
