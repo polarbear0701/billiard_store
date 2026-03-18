@@ -33,13 +33,25 @@ public class PlaySessionController {
 
 
     @PostMapping("/create")
-    public PlaySessionResponseDto create(@RequestBody PlaySessionRequestDto request) {
-        return playSessionService.create(request);
+    public ResponseEntity<SuccessResponse<?>> create(@RequestBody PlaySessionRequestDto request) {
+        PlaySessionResponseDto responseDto = playSessionService.create(request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.ACCEPTED.value(),
+                "success",
+                responseDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping
-    public List<PlaySessionResponseDto> findAll() {
-        return playSessionService.findAll();
+    public ResponseEntity<SuccessResponse<?>> findAll() {
+        List<PlaySessionResponseDto> sessionsDto = playSessionService.findAll();
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                sessionsDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping("/{id}")
@@ -50,23 +62,40 @@ public class PlaySessionController {
                 "success",
                 responseDto,
                 LocalDateTime.now()
-
         ));
     }
 
     @GetMapping("/session-code/{sessionCode}")
-    public PlaySessionResponseDto findBySessionCode(@PathVariable String sessionCode) {
-        return playSessionService.findBySessionCode(sessionCode);
+    public ResponseEntity<SuccessResponse<?>> findBySessionCode(@PathVariable String sessionCode) {
+        PlaySessionResponseDto sessionDto = playSessionService.findBySessionCode(sessionCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                sessionDto,
+                LocalDateTime.now()
+        ));
     }
 
     @PutMapping("/{id}")
-    public PlaySessionResponseDto update(@PathVariable UUID id, @RequestBody PlaySessionRequestDto request) {
-        return playSessionService.update(id, request);
+    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody PlaySessionRequestDto request) {
+        PlaySessionResponseDto updatedDto = playSessionService.update(id, request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                updatedDto,
+                LocalDateTime.now()
+        ));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
+    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
         playSessionService.delete(id);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Play session deleted successfully",
+                null,
+                LocalDateTime.now()
+        ));
     }
 }
 

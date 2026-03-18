@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.exception.ResourceNotFoundException;
+import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.invoice.InvoiceRequestDto;
 import com.billiards.store.dto.invoice.InvoiceResponseDto;
 import com.billiards.store.model.Invoice;
 import com.billiards.store.repository.InvoiceRepository;
-import com.billiards.store.util.CodeGeneratorUtil;
 
 @Service
 public class InvoiceService {
@@ -72,6 +72,8 @@ public class InvoiceService {
     }
 
     public void delete(UUID id) {
+        invoiceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
         invoiceRepository.deleteById(id);
     }
 

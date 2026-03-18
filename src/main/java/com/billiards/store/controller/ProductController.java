@@ -33,13 +33,25 @@ public class ProductController {
 
 
     @PostMapping("/create")
-    public ProductResponseDto create(@RequestBody ProductRequestDto request) {
-        return productService.create(request);
+    public ResponseEntity<SuccessResponse<?>> create(@RequestBody ProductRequestDto request) {
+        ProductResponseDto responseDto = productService.create(request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.ACCEPTED.value(),
+                "success",
+                responseDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping
-    public List<ProductResponseDto> findAll() {
-        return productService.findAll();
+    public ResponseEntity<SuccessResponse<?>> findAll() {
+        List<ProductResponseDto> productsDto = productService.findAll();
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                productsDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping("/{id}")
@@ -50,23 +62,40 @@ public class ProductController {
                 "success",
                 responseDto,
                 LocalDateTime.now()
-
         ));
     }
 
     @GetMapping("/product-code/{productCode}")
-    public ProductResponseDto findByProductCode(@PathVariable String productCode) {
-        return productService.findByProductCode(productCode);
+    public ResponseEntity<SuccessResponse<?>> findByProductCode(@PathVariable String productCode) {
+        ProductResponseDto productDto = productService.findByProductCode(productCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                productDto,
+                LocalDateTime.now()
+        ));
     }
 
     @PutMapping("/{id}")
-    public ProductResponseDto update(@PathVariable UUID id, @RequestBody ProductRequestDto request) {
-        return productService.update(id, request);
+    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody ProductRequestDto request) {
+        ProductResponseDto updatedDto = productService.update(id, request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                updatedDto,
+                LocalDateTime.now()
+        ));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
+    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
         productService.delete(id);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Product deleted successfully",
+                null,
+                LocalDateTime.now()
+        ));
     }
 }
 

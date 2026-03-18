@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.exception.ResourceNotFoundException;
+import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.billiard_table.BilliardTableRequestDto;
 import com.billiards.store.dto.billiard_table.BilliardTableResponseDto;
 import com.billiards.store.model.BilliardTable;
 import com.billiards.store.repository.BilliardTableRepository;
-import com.billiards.store.util.CodeGeneratorUtil;
 
 @Service
 public class BilliardTableService {
@@ -70,6 +70,8 @@ public class BilliardTableService {
     }
 
     public void delete(UUID id) {
+        billiardTableRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Billiard table not found"));
         billiardTableRepository.deleteById(id);
     }
 

@@ -1,4 +1,4 @@
-package com.billiards.store.util;
+package com.billiards.store.common.util;
 
 import org.springframework.stereotype.Component;
 

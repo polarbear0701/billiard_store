@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.exception.ResourceNotFoundException;
+import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.play_session.PlaySessionRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionResponseDto;
 import com.billiards.store.model.PlaySession;
 import com.billiards.store.repository.PlaySessionRepository;
-import com.billiards.store.util.CodeGeneratorUtil;
 
 @Service
 public class PlaySessionService {
@@ -70,6 +70,8 @@ public class PlaySessionService {
     }
 
     public void delete(UUID id) {
+        playSessionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Play session not found"));
         playSessionRepository.deleteById(id);
     }
 

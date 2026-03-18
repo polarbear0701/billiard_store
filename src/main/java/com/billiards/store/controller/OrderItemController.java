@@ -33,13 +33,25 @@ public class OrderItemController {
 
 
     @PostMapping("/create")
-    public OrderItemResponseDto create(@RequestBody OrderItemRequestDto request) {
-        return orderItemService.create(request);
+    public ResponseEntity<SuccessResponse<?>> create(@RequestBody OrderItemRequestDto request) {
+        OrderItemResponseDto responseDto = orderItemService.create(request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.ACCEPTED.value(),
+                "success",
+                responseDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping
-    public List<OrderItemResponseDto> findAll() {
-        return orderItemService.findAll();
+    public ResponseEntity<SuccessResponse<?>> findAll() {
+        List<OrderItemResponseDto> itemsDto = orderItemService.findAll();
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                itemsDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping("/{id}")
@@ -50,23 +62,40 @@ public class OrderItemController {
                 "success",
                 responseDto,
                 LocalDateTime.now()
-
         ));
     }
 
     @GetMapping("/order-item-code/{orderItemCode}")
-    public OrderItemResponseDto findByOrderItemCode(@PathVariable String orderItemCode) {
-        return orderItemService.findByOrderItemCode(orderItemCode);
+    public ResponseEntity<SuccessResponse<?>> findByOrderItemCode(@PathVariable String orderItemCode) {
+        OrderItemResponseDto itemDto = orderItemService.findByOrderItemCode(orderItemCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                itemDto,
+                LocalDateTime.now()
+        ));
     }
 
     @PutMapping("/{id}")
-    public OrderItemResponseDto update(@PathVariable UUID id, @RequestBody OrderItemRequestDto request) {
-        return orderItemService.update(id, request);
+    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody OrderItemRequestDto request) {
+        OrderItemResponseDto updatedDto = orderItemService.update(id, request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                updatedDto,
+                LocalDateTime.now()
+        ));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
+    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
         orderItemService.delete(id);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Order item deleted successfully",
+                null,
+                LocalDateTime.now()
+        ));
     }
 }
 

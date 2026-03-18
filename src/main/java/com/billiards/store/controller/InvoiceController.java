@@ -33,13 +33,25 @@ public class InvoiceController {
 
 
     @PostMapping("/create")
-    public InvoiceResponseDto create(@RequestBody InvoiceRequestDto request) {
-        return invoiceService.create(request);
+    public ResponseEntity<SuccessResponse<?>> create(@RequestBody InvoiceRequestDto request) {
+        InvoiceResponseDto responseDto = invoiceService.create(request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.ACCEPTED.value(),
+                "success",
+                responseDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping
-    public List<InvoiceResponseDto> findAll() {
-        return invoiceService.findAll();
+    public ResponseEntity<SuccessResponse<?>> findAll() {
+        List<InvoiceResponseDto> invoicesDto = invoiceService.findAll();
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                invoicesDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping("/{id}")
@@ -50,23 +62,40 @@ public class InvoiceController {
                 "success",
                 responseDto,
                 LocalDateTime.now()
-
         ));
     }
 
     @GetMapping("/invoice-code/{invoiceCode}")
-    public InvoiceResponseDto findByInvoiceCode(@PathVariable String invoiceCode) {
-        return invoiceService.findByInvoiceCode(invoiceCode);
+    public ResponseEntity<SuccessResponse<?>> findByInvoiceCode(@PathVariable String invoiceCode) {
+        InvoiceResponseDto invoiceDto = invoiceService.findByInvoiceCode(invoiceCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                invoiceDto,
+                LocalDateTime.now()
+        ));
     }
 
     @PutMapping("/{id}")
-    public InvoiceResponseDto update(@PathVariable UUID id, @RequestBody InvoiceRequestDto request) {
-        return invoiceService.update(id, request);
+    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody InvoiceRequestDto request) {
+        InvoiceResponseDto updatedDto = invoiceService.update(id, request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                updatedDto,
+                LocalDateTime.now()
+        ));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
+    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
         invoiceService.delete(id);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Invoice deleted successfully",
+                null,
+                LocalDateTime.now()
+        ));
     }
 }
 

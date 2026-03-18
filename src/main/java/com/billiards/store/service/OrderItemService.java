@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.exception.ResourceNotFoundException;
+import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.order_item.OrderItemRequestDto;
 import com.billiards.store.dto.order_item.OrderItemResponseDto;
 import com.billiards.store.model.OrderItem;
 import com.billiards.store.repository.OrderItemRepository;
-import com.billiards.store.util.CodeGeneratorUtil;
 
 @Service
 public class OrderItemService {
@@ -72,6 +72,8 @@ public class OrderItemService {
     }
 
     public void delete(UUID id) {
+        orderItemRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
         orderItemRepository.deleteById(id);
     }
 

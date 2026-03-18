@@ -33,13 +33,24 @@ public class BilliardTableController {
 
     
     @PostMapping("/create")
-    public BilliardTableResponseDto create(@RequestBody BilliardTableRequestDto request) {
-        return billiardTableService.create(request);
+    public ResponseEntity<SuccessResponse<?>> create(@RequestBody BilliardTableRequestDto request) {
+        BilliardTableResponseDto responseDto = billiardTableService.create(request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+            HttpStatus.ACCEPTED.value(),
+            "success", 
+            responseDto, 
+            LocalDateTime.now()));
     }
 
-    @GetMapping
-    public List<BilliardTableResponseDto> findAll() {
-        return billiardTableService.findAll();
+    @GetMapping("/all")
+    public ResponseEntity<SuccessResponse<?>> findAll() {
+        List<BilliardTableResponseDto> tablesDto = billiardTableService.findAll();
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                tablesDto,
+                LocalDateTime.now()
+        ));
     }
 
     @GetMapping("/{id}")
@@ -55,17 +66,35 @@ public class BilliardTableController {
     }
 
     @GetMapping("/table-code/{tableCode}")
-    public BilliardTableResponseDto findByTableCode(@PathVariable String tableCode) {
-        return billiardTableService.findByTableCode(tableCode);
+    public ResponseEntity<SuccessResponse<?>> findByTableCode(@PathVariable String tableCode) {
+        BilliardTableResponseDto tableDto = billiardTableService.findByTableCode(tableCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                tableDto,
+                LocalDateTime.now()
+        ));
     }
 
     @PutMapping("/{id}")
-    public BilliardTableResponseDto update(@PathVariable UUID id, @RequestBody BilliardTableRequestDto request) {
-        return billiardTableService.update(id, request);
+    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody BilliardTableRequestDto request) {
+        BilliardTableResponseDto updatedDto = billiardTableService.update(id, request);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                updatedDto,
+                LocalDateTime.now()
+        ));
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable UUID id) {
+    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
         billiardTableService.delete(id);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Billiard table deleted successfully",
+                null,
+                LocalDateTime.now()
+        ));
     }
 }

@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.exception.ResourceNotFoundException;
+import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.product.ProductRequestDto;
 import com.billiards.store.dto.product.ProductResponseDto;
 import com.billiards.store.model.Product;
 import com.billiards.store.repository.ProductRepository;
-import com.billiards.store.util.CodeGeneratorUtil;
 
 @Service
 public class ProductService {
@@ -70,6 +70,8 @@ public class ProductService {
     }
 
     public void delete(UUID id) {
+        productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         productRepository.deleteById(id);
     }
 
