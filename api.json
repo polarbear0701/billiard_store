@@ -1,0 +1,188 @@
+{
+  "info": {
+    "name": "Billiards Store API",
+    "description": "API endpoints for Store Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Product",
+      "item": [
+        {
+          "name": "Create Product",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"name\": \"Coca Cola\", \"quantity\": 100, \"price\": 2.50}"},
+            "url": {"raw": "http://localhost:15678/product/create", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["product", "create"]}
+          }
+        },
+        {
+          "name": "Get All Products",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/product", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["product"]}}
+        },
+        {
+          "name": "Get Product By ID",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/product/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["product", "550e8400-e29b-41d4-a716-446655440000"]}}
+        },
+        {
+          "name": "Get Product By Code",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/product/product-code/PROD001", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["product", "product-code", "PROD001"]}}
+        },
+        {
+          "name": "Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"name\": \"Coca Cola Updated\", \"quantity\": 150, \"price\": 3.00}"},
+            "url": {"raw": "http://localhost:15678/product/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["product", "550e8400-e29b-41d4-a716-446655440000"]}
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {"method": "DELETE", "url": {"raw": "http://localhost:15678/product/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["product", "550e8400-e29b-41d4-a716-446655440000"]}}
+        }
+      ]
+    },
+    {
+      "name": "Billiard Table",
+      "item": [
+        {
+          "name": "Create Table",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"tableType\": \"POOL\", \"tableStatus\": \"AVAILABLE\", \"pricePerHour\": 50.00}"},
+            "url": {"raw": "http://localhost:15678/table/create", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["table", "create"]}
+          }
+        },
+        {
+          "name": "Get All Tables",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/table", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["table"]}}
+        },
+        {
+          "name": "Get Table By ID",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/table/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["table", "550e8400-e29b-41d4-a716-446655440000"]}}
+        },
+        {
+          "name": "Update Table",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"tableType\": \"CAROM\", \"tableStatus\": \"OCCUPIED\", \"pricePerHour\": 75.00}"},
+            "url": {"raw": "http://localhost:15678/table/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["table", "550e8400-e29b-41d4-a716-446655440000"]}
+          }
+        },
+        {
+          "name": "Delete Table",
+          "request": {"method": "DELETE", "url": {"raw": "http://localhost:15678/table/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["table", "550e8400-e29b-41d4-a716-446655440000"]}}
+        }
+      ]
+    },
+    {
+      "name": "Play Session",
+      "item": [
+        {
+          "name": "Create Session",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"tableCode\": \"TABLE001\", \"endTime\": \"2026-03-17T20:00:00\", \"sessionStatus\": \"ACTIVE\"}"},
+            "url": {"raw": "http://localhost:15678/play-session/create", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["play-session", "create"]}
+          }
+        },
+        {
+          "name": "Get All Sessions",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/play-session", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["play-session"]}}
+        },
+        {
+          "name": "Get Session By ID",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/play-session/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["play-session", "550e8400-e29b-41d4-a716-446655440000"]}}
+        },
+        {
+          "name": "Update Session",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"tableCode\": \"TABLE001\", \"endTime\": \"2026-03-17T21:00:00\", \"sessionStatus\": \"COMPLETED\"}"},
+            "url": {"raw": "http://localhost:15678/play-session/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["play-session", "550e8400-e29b-41d4-a716-446655440000"]}
+          }
+        },
+        {
+          "name": "Delete Session",
+          "request": {"method": "DELETE", "url": {"raw": "http://localhost:15678/play-session/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["play-session", "550e8400-e29b-41d4-a716-446655440000"]}}
+        }
+      ]
+    },
+    {
+      "name": "Invoice",
+      "item": [
+        {
+          "name": "Create Invoice",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"sessionCode\": \"SES001\", \"tableFee\": 100.00, \"fnbFee\": 25.50, \"totalAmount\": 125.50}"},
+            "url": {"raw": "http://localhost:15678/invoice/create", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["invoice", "create"]}
+          }
+        },
+        {
+          "name": "Get All Invoices",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/invoice", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["invoice"]}}
+        },
+        {
+          "name": "Get Invoice By ID",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/invoice/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["invoice", "550e8400-e29b-41d4-a716-446655440000"]}}
+        },
+        {
+          "name": "Update Invoice",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"sessionCode\": \"SES001\", \"tableFee\": 120.00, \"fnbFee\": 30.00, \"totalAmount\": 150.00}"},
+            "url": {"raw": "http://localhost:15678/invoice/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["invoice", "550e8400-e29b-41d4-a716-446655440000"]}
+          }
+        },
+        {
+          "name": "Delete Invoice",
+          "request": {"method": "DELETE", "url": {"raw": "http://localhost:15678/invoice/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["invoice", "550e8400-e29b-41d4-a716-446655440000"]}}
+        }
+      ]
+    },
+    {
+      "name": "Order Item",
+      "item": [
+        {
+          "name": "Create Order Item",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"sessionCode\": \"SES001\", \"productCode\": \"PROD001\", \"quantity\": 2, \"price\": 5.00}"},
+            "url": {"raw": "http://localhost:15678/order-item/create", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["order-item", "create"]}
+          }
+        },
+        {
+          "name": "Get All Order Items",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/order-item", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["order-item"]}}
+        },
+        {
+          "name": "Get Order Item By ID",
+          "request": {"method": "GET", "url": {"raw": "http://localhost:15678/order-item/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["order-item", "550e8400-e29b-41d4-a716-446655440000"]}}
+        },
+        {
+          "name": "Update Order Item",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\"sessionCode\": \"SES001\", \"productCode\": \"PROD001\", \"quantity\": 3, \"price\": 5.00}"},
+            "url": {"raw": "http://localhost:15678/order-item/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["order-item", "550e8400-e29b-41d4-a716-446655440000"]}
+          }
+        },
+        {
+          "name": "Delete Order Item",
+          "request": {"method": "DELETE", "url": {"raw": "http://localhost:15678/order-item/550e8400-e29b-41d4-a716-446655440000", "protocol": "http", "host": ["localhost"], "port": "15678", "path": ["order-item", "550e8400-e29b-41d4-a716-446655440000"]}}
+        }
+      ]
+    }
+  ]
+}
