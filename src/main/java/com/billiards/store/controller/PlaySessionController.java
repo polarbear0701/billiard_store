@@ -76,6 +76,18 @@ public class PlaySessionController {
         ));
     }
 
+    @PutMapping("/close/{sessionCode}")
+    public ResponseEntity<SuccessResponse<?>> closePlaySession(@PathVariable String sessionCode) {
+        playSessionService.endPlaySession(sessionCode);
+        
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Session closed successfully",
+                null,
+                LocalDateTime.now()
+        ));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody PlaySessionRequestDto request) {
         PlaySessionResponseDto updatedDto = playSessionService.update(id, request);

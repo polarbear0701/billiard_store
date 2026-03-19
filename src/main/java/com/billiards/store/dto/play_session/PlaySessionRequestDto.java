@@ -15,6 +15,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class PlaySessionRequestDto {
     private String tableCode;
-    private LocalDateTime endTime;
     private SessionStatus sessionStatus;
 }
