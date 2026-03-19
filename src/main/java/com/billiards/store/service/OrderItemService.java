@@ -10,8 +10,11 @@ import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.order_item.OrderItemRequestDto;
 import com.billiards.store.dto.order_item.OrderItemResponseDto;
+import com.billiards.store.dto.product.ProductResponseDto;
 import com.billiards.store.model.OrderItem;
 import com.billiards.store.repository.OrderItemRepository;
+
+import jakarta.transaction.Transactional;
 
 @Service
 public class OrderItemService {
@@ -32,21 +35,28 @@ public class OrderItemService {
         this.productService = productService;
     }
 
+    @Transactional
     public OrderItemResponseDto create(OrderItemRequestDto requestDto) {
+
+        validateRequestDto(
+            requestDto
+        );
+
+        ProductResponseDto productResponseDto = productService.findByProductCode(requestDto.getProductCode());
+
+        playSessionService.findBySessionCode(requestDto.getSessionCode());
+
+
         OrderItem orderItem = new OrderItem();
         orderItem.setOrderItemCode(
             codeGeneratorUtil.generateCode("ORI", "order_item_code_seq")
         );
 
-        validateReferenceCode(
-            requestDto.getProductCode(),
-            requestDto.getSessionCode()
-        );
-
         orderItem.setSessionCode(requestDto.getSessionCode());
         orderItem.setProductCode(requestDto.getProductCode());
         orderItem.setQuantity(requestDto.getQuantity());
-        orderItem.setPrice(requestDto.getPrice());
+
+        orderItem.setPrice(productResponseDto.getPrice());
         
         OrderItem savedOrderItem = orderItemRepository.save(orderItem);
         return convertToResponseDto(savedOrderItem);
@@ -70,6 +80,7 @@ public class OrderItemService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public OrderItemResponseDto update(UUID id, OrderItemRequestDto requestDto) {
         OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
@@ -77,7 +88,10 @@ public class OrderItemService {
         orderItem.setSessionCode(requestDto.getSessionCode());
         orderItem.setProductCode(requestDto.getProductCode());
         orderItem.setQuantity(requestDto.getQuantity());
-        orderItem.setPrice(requestDto.getPrice());
+
+
+
+        orderItem.setPrice(productService.getProductPrice(requestDto.getProductCode()));
         
         OrderItem updatedOrderItem = orderItemRepository.save(orderItem);
         return convertToResponseDto(updatedOrderItem);
@@ -90,18 +104,19 @@ public class OrderItemService {
         orderItemRepository.save(orderItem);
     }
 
-    private void validateReferenceCode(
-        String productCode,
-        String sessionCode
+    private void validateRequestDto(
+        OrderItemRequestDto requestDto
     ) {
-        if (sessionCode == null || sessionCode.trim().isEmpty()) {
+        if (requestDto.getSessionCode() == null || requestDto.getSessionCode().trim().isEmpty()) {
             throw new ResourceNotFoundException("Session code cannot be empty");
         }
-        if (productCode == null || productCode.trim().isEmpty()) {
+        if (requestDto.getProductCode() == null || requestDto.getProductCode().trim().isEmpty()) {
             throw new ResourceNotFoundException("Product code cannot be empty");
         }
-        playSessionService.findBySessionCode(sessionCode);
-        productService.findByProductCode(sessionCode);
+        if (requestDto.getQuantity() <= 0) {
+            throw new ResourceNotFoundException("Quantity cannot be less than 0");
+        }
+
     }
 
     private OrderItemResponseDto convertToResponseDto(OrderItem orderItem) {

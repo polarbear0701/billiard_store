@@ -15,5 +15,4 @@ public class OrderItemRequestDto {
     private String sessionCode;
     private String productCode;
     private int quantity;
-    private BigDecimal price;
 }

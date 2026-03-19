@@ -57,6 +57,12 @@ public class BilliardTableService {
         return convertToResponseDto(table);
     }
 
+    public BigDecimal getTablePricePerHour(String tableCode) {
+        BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        return table.getPricePerHour();
+    }
+
     public List<BilliardTableResponseDto> findAll() {
         return billiardTableRepository.findByIsDeletedFalse().stream()
                 .map(this::convertToResponseDto)

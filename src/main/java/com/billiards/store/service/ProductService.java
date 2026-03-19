@@ -40,6 +40,12 @@ public class ProductService {
         return convertToResponseDto(savedProduct);
     }
 
+    public BigDecimal getProductPrice(String productCode) {
+        Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
+                .orElseThrow(() -> new ResourceNotFoundException("No product found"));
+        return product.getPrice();
+    }
+
     public ProductResponseDto findById(UUID id) {
         Product product = productRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
