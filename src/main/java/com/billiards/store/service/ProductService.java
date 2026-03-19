@@ -1,5 +1,6 @@
 package com.billiards.store.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -87,6 +88,17 @@ public class ProductService {
             product.setQuantity(product.getQuantity() + amountToUpdate);
         }
 
+        productRepository.save(product);
+    }
+
+    public void updatePrice(String productCode, int newStockPrice) {
+        Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (newStockPrice <= 1000) {
+            throw new ResourceNotFoundException("Stock price is invalid");
+        }
+
+        product.setPrice(BigDecimal.valueOf(newStockPrice));
         productRepository.save(product);
     }
 

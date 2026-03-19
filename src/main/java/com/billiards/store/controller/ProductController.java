@@ -77,9 +77,9 @@ public class ProductController {
         ));
     }
 
-    @PutMapping("/{tableCode}")
-    public ResponseEntity<SuccessResponse<?>> update(@PathVariable String tableCode, @RequestBody ProductRequestDto request) {
-        ProductResponseDto updatedDto = productService.update(tableCode, request);
+    @PutMapping("/{productCode}")
+    public ResponseEntity<SuccessResponse<?>> update(@PathVariable String productCode, @RequestBody ProductRequestDto request) {
+        ProductResponseDto updatedDto = productService.update(productCode, request);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
                 "success",
@@ -88,9 +88,20 @@ public class ProductController {
         ));
     }
 
-    @PutMapping("/update-stock/{tableCode}")
-    public ResponseEntity<SuccessResponse<?>> putMethodName(@PathVariable String tableCode, @RequestBody ProductUpdateStockDto productUpdateStockDto) {
-        productService.updateStock(tableCode, productUpdateStockDto.getAmountToUpdate(), productUpdateStockDto.isDecrement());
+    @PutMapping("/update-stock/{productCode}")
+    public ResponseEntity<SuccessResponse<?>> updateProductQuantity(@PathVariable String productCode, @RequestBody ProductUpdateStockDto productUpdateStockDto) {
+        productService.updateStock(productCode, productUpdateStockDto.getAmountToUpdate(), productUpdateStockDto.isDecrement());
+        
+        return ResponseEntity.ok(new SuccessResponse<>(
+            HttpStatus.ACCEPTED.value(), 
+            "success", 
+            null, 
+            LocalDateTime.now()));
+    }
+
+    @PutMapping("/update-stock/{productCode}/{newStockPrice}")
+    public ResponseEntity<SuccessResponse<?>> updateProductPrice(@PathVariable String productCode, @PathVariable int newStockPrice) {
+        productService.updatePrice(productCode, newStockPrice);
         
         return ResponseEntity.ok(new SuccessResponse<>(
             HttpStatus.ACCEPTED.value(), 
