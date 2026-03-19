@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.billiards.store.common.base.SuccessResponse;
+import com.billiards.store.common.enumerated.TableStatus;
 import com.billiards.store.dto.billiard_table.BilliardTableRequestDto;
 import com.billiards.store.dto.billiard_table.BilliardTableResponseDto;
 import com.billiards.store.service.BilliardTableService;
@@ -87,12 +88,12 @@ public class BilliardTableController {
         ));
     }
 
-    @PutMapping("/occupy/{tableCode}")
-    public ResponseEntity<SuccessResponse<?>> occupyTable(@PathVariable String tableCode) {
-        BilliardTableResponseDto responseDto = billiardTableService.occupyTable(tableCode);
+    @PutMapping("/occupy/{tableCode}/{newStatus}")
+    public ResponseEntity<SuccessResponse<?>> setStatusTable(@PathVariable String tableCode, @PathVariable TableStatus newStatus) {
+        BilliardTableResponseDto responseDto = billiardTableService.setStatusTable(tableCode, newStatus);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Table occupied successfully",
+                "Status changed successfully",
                 responseDto,
                 LocalDateTime.now()
         ));

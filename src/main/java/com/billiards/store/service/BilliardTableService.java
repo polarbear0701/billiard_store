@@ -79,14 +79,24 @@ public class BilliardTableService {
         setTableToDelete(tableCode);
     }
 
-    public BilliardTableResponseDto occupyTable(String tableCode) {
+    public BilliardTableResponseDto setStatusTable(String tableCode, TableStatus newStatus) {
         BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Billiard table not found"));
         
-        if (table.getTableStatus() != TableStatus.AVAILABLE) {
-            throw new ResourceNotFoundException("Table currently unavailable. Please try again");
+        if (table.getTableStatus() == newStatus) {
+            throw new ResourceNotFoundException("Table is already in " + newStatus);
         }
-        table.setTableStatus(TableStatus.OCCUPIED);
+
+        if (table.getTableStatus() == TableStatus.MAINTENANCE && newStatus == TableStatus.OCCUPIED) {
+            throw new ResourceNotFoundException("Table is currently in maintainance.");
+        }
+
+        if (table.getTableStatus() == TableStatus.OCCUPIED && newStatus == TableStatus.MAINTENANCE) {
+            throw new ResourceNotFoundException("Table is currently in use.");
+        }
+
+
+        table.setTableStatus(newStatus);
         BilliardTable savedTable = billiardTableRepository.save(table);
         return convertToResponseDto(savedTable);
     }
