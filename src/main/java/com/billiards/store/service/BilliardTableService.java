@@ -13,6 +13,7 @@ import com.billiards.store.dto.billiard_table.BilliardTableRequestDto;
 import com.billiards.store.dto.billiard_table.BilliardTableResponseDto;
 import com.billiards.store.model.BilliardTable;
 import com.billiards.store.repository.BilliardTableRepository;
+import com.billiards.store.common.enumerated.TableStatus;
 
 @Service
 public class BilliardTableService {
@@ -63,7 +64,7 @@ public class BilliardTableService {
     }
 
     public BilliardTableResponseDto update(UUID id, BilliardTableRequestDto requestDto) {
-        BilliardTable table = billiardTableRepository.findById(id)
+        BilliardTable table = billiardTableRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Billiard table not found"));
         
         table.setTableType(requestDto.getTableType());
@@ -76,6 +77,18 @@ public class BilliardTableService {
 
     public void delete(String tableCode) {
         setTableToDelete(tableCode);
+    }
+
+    public BilliardTableResponseDto occupyTable(String tableCode) {
+        BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Billiard table not found"));
+        
+        if (table.getTableStatus() != TableStatus.AVAILABLE) {
+            throw new ResourceNotFoundException("Table currently unavailable. Please try again");
+        }
+        table.setTableStatus(TableStatus.OCCUPIED);
+        BilliardTable savedTable = billiardTableRepository.save(table);
+        return convertToResponseDto(savedTable);
     }
 
     private BilliardTableResponseDto convertToResponseDto(BilliardTable table) {

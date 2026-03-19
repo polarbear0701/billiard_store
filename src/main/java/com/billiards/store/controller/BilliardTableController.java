@@ -87,6 +87,17 @@ public class BilliardTableController {
         ));
     }
 
+    @PutMapping("/occupy/{tableCode}")
+    public ResponseEntity<SuccessResponse<?>> occupyTable(@PathVariable String tableCode) {
+        BilliardTableResponseDto responseDto = billiardTableService.occupyTable(tableCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Table occupied successfully",
+                responseDto,
+                LocalDateTime.now()
+        ));
+    }
+
     @DeleteMapping("/{tableCode}")
     public ResponseEntity<SuccessResponse<?>> delete(@PathVariable String tableCode) {
         billiardTableService.delete(tableCode);
