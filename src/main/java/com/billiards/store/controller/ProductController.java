@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.billiards.store.common.base.SuccessResponse;
 import com.billiards.store.dto.product.ProductRequestDto;
 import com.billiards.store.dto.product.ProductResponseDto;
+import com.billiards.store.dto.product.ProductUpdateStockDto;
 import com.billiards.store.service.ProductService;
 
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,15 +77,26 @@ public class ProductController {
         ));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody ProductRequestDto request) {
-        ProductResponseDto updatedDto = productService.update(id, request);
+    @PutMapping("/{tableCode}")
+    public ResponseEntity<SuccessResponse<?>> update(@PathVariable String tableCode, @RequestBody ProductRequestDto request) {
+        ProductResponseDto updatedDto = productService.update(tableCode, request);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
                 "success",
                 updatedDto,
                 LocalDateTime.now()
         ));
+    }
+
+    @PutMapping("/update-stock/{tableCode}")
+    public ResponseEntity<SuccessResponse<?>> putMethodName(@PathVariable String tableCode, @RequestBody ProductUpdateStockDto productUpdateStockDto) {
+        productService.updateStock(tableCode, productUpdateStockDto.getAmountToUpdate(), productUpdateStockDto.isDecrement());
+        
+        return ResponseEntity.ok(new SuccessResponse<>(
+            HttpStatus.ACCEPTED.value(), 
+            "success", 
+            null, 
+            LocalDateTime.now()));
     }
 
     @DeleteMapping("/{id}")

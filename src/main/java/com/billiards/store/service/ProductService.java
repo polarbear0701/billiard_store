@@ -57,8 +57,8 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
-    public ProductResponseDto update(UUID id, ProductRequestDto requestDto) {
-        Product product = productRepository.findByIdAndIsDeletedFalse(id)
+    public ProductResponseDto update(String productCode, ProductRequestDto requestDto) {
+        Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         product.setName(requestDto.getName());
@@ -67,6 +67,27 @@ public class ProductService {
         
         Product updatedProduct = productRepository.save(product);
         return convertToResponseDto(updatedProduct);
+    }
+
+    public void updateStock(String productCode, int amountToUpdate, boolean isDecrement) {
+        Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        if (product.getQuantity() < amountToUpdate) {
+            throw new IllegalArgumentException("Not enough stock available");
+        }
+
+        if (product.getQuantity() <= 0) {
+            throw new ResourceNotFoundException("Out of stock");
+        }
+
+        if (isDecrement) {
+            product.setQuantity(product.getQuantity() - amountToUpdate);
+        } else {
+            product.setQuantity(product.getQuantity() + amountToUpdate);
+        }
+
+        productRepository.save(product);
     }
 
     public void delete(UUID id) {
