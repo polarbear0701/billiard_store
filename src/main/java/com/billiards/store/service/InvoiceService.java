@@ -47,25 +47,25 @@ public class InvoiceService {
     }
 
     public InvoiceResponseDto findById(UUID id) {
-        Invoice invoice = invoiceRepository.findById(id)
+        Invoice invoice = invoiceRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
         return convertToResponseDto(invoice);
     }
 
     public InvoiceResponseDto findByInvoiceCode(String invoiceCode) {
-        Invoice invoice = invoiceRepository.findByInvoiceCode(invoiceCode)
+        Invoice invoice = invoiceRepository.findByInvoiceCodeAndIsDeletedFalse(invoiceCode)
             .orElseThrow(() -> new ResourceNotFoundException("No invoice associated with this invoice code. Please try again"));
         return convertToResponseDto(invoice);
     }
 
     public List<InvoiceResponseDto> findAll() {
-        return invoiceRepository.findAll().stream()
+        return invoiceRepository.findByIsDeletedFalse().stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     public InvoiceResponseDto update(UUID id, InvoiceRequestDto requestDto) {
-        Invoice invoice = invoiceRepository.findById(id)
+        Invoice invoice = invoiceRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
 
         invoice.setSessionCode(requestDto.getSessionCode());
@@ -78,9 +78,10 @@ public class InvoiceService {
     }
 
     public void delete(UUID id) {
-        invoiceRepository.findById(id)
+        Invoice invoice = invoiceRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
-        invoiceRepository.deleteById(id);
+        invoice.setIsDeleted(true);
+        invoiceRepository.save(invoice);
     }
 
     private void validateReferenceCode(String sessionCode) {

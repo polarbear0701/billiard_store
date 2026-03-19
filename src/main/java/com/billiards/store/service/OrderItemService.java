@@ -17,13 +17,19 @@ import com.billiards.store.repository.OrderItemRepository;
 public class OrderItemService {
     private final OrderItemRepository orderItemRepository;
     private final CodeGeneratorUtil codeGeneratorUtil;
+    private final PlaySessionService playSessionService;
+    private final ProductService productService;
 
     public OrderItemService(
         OrderItemRepository orderItemRepository,
-        CodeGeneratorUtil codeGeneratorUtil
+        CodeGeneratorUtil codeGeneratorUtil,
+        PlaySessionService playSessionService,
+        ProductService productService
     ) {
         this.orderItemRepository = orderItemRepository;
         this.codeGeneratorUtil = codeGeneratorUtil;
+        this.playSessionService = playSessionService;
+        this.productService = productService;
     }
 
     public OrderItemResponseDto create(OrderItemRequestDto requestDto) {
@@ -31,6 +37,12 @@ public class OrderItemService {
         orderItem.setOrderItemCode(
             codeGeneratorUtil.generateCode("ORI", "order_item_code_seq")
         );
+
+        validateReferenceCode(
+            requestDto.getProductCode(),
+            requestDto.getSessionCode()
+        );
+
         orderItem.setSessionCode(requestDto.getSessionCode());
         orderItem.setProductCode(requestDto.getProductCode());
         orderItem.setQuantity(requestDto.getQuantity());
@@ -41,25 +53,25 @@ public class OrderItemService {
     }
 
     public OrderItemResponseDto findById(UUID id) {
-        OrderItem orderItem = orderItemRepository.findById(id)
+        OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
         return convertToResponseDto(orderItem);
     }
 
     public OrderItemResponseDto findByOrderItemCode(String orderItemCode) {
-        OrderItem orderItem = orderItemRepository.findByOrderItemCode(orderItemCode)
+        OrderItem orderItem = orderItemRepository.findByOrderItemCodeAndIsDeletedFalse(orderItemCode)
             .orElseThrow(() -> new ResourceNotFoundException("No order item associated with this order item code. Please try again"));
         return convertToResponseDto(orderItem);
     }
 
     public List<OrderItemResponseDto> findAll() {
-        return orderItemRepository.findAll().stream()
+        return orderItemRepository.findByIsDeletedFalse().stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     public OrderItemResponseDto update(UUID id, OrderItemRequestDto requestDto) {
-        OrderItem orderItem = orderItemRepository.findById(id)
+        OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
 
         orderItem.setSessionCode(requestDto.getSessionCode());
@@ -72,9 +84,24 @@ public class OrderItemService {
     }
 
     public void delete(UUID id) {
-        orderItemRepository.findById(id)
+        OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
-        orderItemRepository.deleteById(id);
+        orderItem.setIsDeleted(true);
+        orderItemRepository.save(orderItem);
+    }
+
+    private void validateReferenceCode(
+        String productCode,
+        String sessionCode
+    ) {
+        if (sessionCode == null || sessionCode.trim().isEmpty()) {
+            throw new ResourceNotFoundException("Session code cannot be empty");
+        }
+        if (productCode == null || productCode.trim().isEmpty()) {
+            throw new ResourceNotFoundException("Product code cannot be empty");
+        }
+        playSessionService.findBySessionCode(sessionCode);
+        productService.findByProductCode(sessionCode);
     }
 
     private OrderItemResponseDto convertToResponseDto(OrderItem orderItem) {

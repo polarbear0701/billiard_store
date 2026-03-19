@@ -40,25 +40,25 @@ public class ProductService {
     }
 
     public ProductResponseDto findById(UUID id) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         return convertToResponseDto(product);
     }
 
     public ProductResponseDto findByProductCode(String productCode) {
-        Product product = productRepository.findByProductCode(productCode)
+        Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
             .orElseThrow(() -> new ResourceNotFoundException("No product associated with this product code. Please try again"));
         return convertToResponseDto(product);
     }
 
     public List<ProductResponseDto> findAll() {
-        return productRepository.findAll().stream()
+        return productRepository.findByIsDeletedFalse().stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     public ProductResponseDto update(UUID id, ProductRequestDto requestDto) {
-        Product product = productRepository.findById(id)
+        Product product = productRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
 
         product.setName(requestDto.getName());
@@ -70,9 +70,10 @@ public class ProductService {
     }
 
     public void delete(UUID id) {
-        productRepository.findById(id)
+        Product product = productRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
-        productRepository.deleteById(id);
+        product.setIsDeleted(true);
+        productRepository.save(product);
     }
 
     private ProductResponseDto convertToResponseDto(Product product) {

@@ -40,25 +40,25 @@ public class PlaySessionService {
     }
 
     public PlaySessionResponseDto findById(UUID id) {
-        PlaySession session = playSessionRepository.findById(id)
+        PlaySession session = playSessionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Play session not found"));
         return convertToResponseDto(session);
     }
 
     public PlaySessionResponseDto findBySessionCode(String sessionCode) {
-        PlaySession session = playSessionRepository.findBySessionCode(sessionCode)
+        PlaySession session = playSessionRepository.findBySessionCodeAndIsDeletedFalse(sessionCode)
             .orElseThrow(() -> new ResourceNotFoundException("No play session associated with this session code. Please try again"));
         return convertToResponseDto(session);
     }
 
     public List<PlaySessionResponseDto> findAll() {
-        return playSessionRepository.findAll().stream()
+        return playSessionRepository.findByIsDeletedFalse().stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
     public PlaySessionResponseDto update(UUID id, PlaySessionRequestDto requestDto) {
-        PlaySession session = playSessionRepository.findById(id)
+        PlaySession session = playSessionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Play session not found"));
 
         session.setTableCode(requestDto.getTableCode());
@@ -70,9 +70,10 @@ public class PlaySessionService {
     }
 
     public void delete(UUID id) {
-        playSessionRepository.findById(id)
+        PlaySession session = playSessionRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Play session not found"));
-        playSessionRepository.deleteById(id);
+        session.setIsDeleted(true);
+        playSessionRepository.save(session);
     }
 
     private PlaySessionResponseDto convertToResponseDto(PlaySession session) {
