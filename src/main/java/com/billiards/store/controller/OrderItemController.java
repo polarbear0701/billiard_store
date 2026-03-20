@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 
+
 @RestController
 @RequestMapping("/order-item")
 public class OrderItemController {
@@ -75,6 +76,18 @@ public class OrderItemController {
                 LocalDateTime.now()
         ));
     }
+
+    @GetMapping("/all/{sessionCode}")
+    public ResponseEntity<SuccessResponse<?>> getMethodName(@PathVariable String sessionCode) {
+        List<OrderItemResponseDto> itemsDto = orderItemService.findOrderItemsBySessionCode(sessionCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                itemsDto,
+                LocalDateTime.now()
+        ));
+    }
+    
 
     @PutMapping("/{id}")
     public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody OrderItemRequestDto request) {
