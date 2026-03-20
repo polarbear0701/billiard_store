@@ -57,6 +57,8 @@ public class OrderItemService {
         orderItem.setQuantity(requestDto.getQuantity());
 
         orderItem.setPrice(productResponseDto.getPrice());
+
+        productService.updateStock(requestDto.getProductCode(), requestDto.getQuantity(), true);
         
         OrderItem savedOrderItem = orderItemRepository.save(orderItem);
         return convertToResponseDto(savedOrderItem);
@@ -96,6 +98,12 @@ public class OrderItemService {
         OrderItem updatedOrderItem = orderItemRepository.save(orderItem);
         return convertToResponseDto(updatedOrderItem);
     }
+
+    public List<OrderItemResponseDto> findOrderItemsBySessionCode(String sessionCode) {
+        return orderItemRepository.findAllBySessionCode(sessionCode).stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    } 
 
     public void delete(UUID id) {
         OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
