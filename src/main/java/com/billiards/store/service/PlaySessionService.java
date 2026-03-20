@@ -75,6 +75,7 @@ public class PlaySessionService {
 
         playSession.setEndTime(LocalDateTime.now());
         playSession.setSessionStatus(SessionStatus.COMPLETED);
+        billiardTableService.setStatusTable(playSession.getTableCode(), TableStatus.AVAILABLE);
         playSessionRepository.save(playSession);
     }
 
