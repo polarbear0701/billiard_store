@@ -1,6 +1,5 @@
 package com.billiards.store.dto.invoice;
 
-import java.math.BigDecimal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +12,4 @@ import lombok.Setter;
 @AllArgsConstructor
 public class InvoiceRequestDto {
     private String sessionCode;
-    private BigDecimal tableFee;
-    private BigDecimal fnbFee;
-    private BigDecimal totalAmount;
 }

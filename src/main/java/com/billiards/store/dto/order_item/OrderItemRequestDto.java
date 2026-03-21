@@ -1,6 +1,5 @@
 package com.billiards.store.dto.order_item;
 
-import java.math.BigDecimal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

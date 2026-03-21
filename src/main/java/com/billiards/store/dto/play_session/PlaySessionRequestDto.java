@@ -1,6 +1,5 @@
 package com.billiards.store.dto.play_session;
 
-import java.time.LocalDateTime;
 
 import com.billiards.store.common.enumerated.SessionStatus;
 
