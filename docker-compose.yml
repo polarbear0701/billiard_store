@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    container_name: billiard-store-backend
+    ports:
+      - "15678:15678"
+    environment:
+      - SERVER_PORT=${SERVER_PORT}
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      

@@ -126,7 +126,7 @@ public class OrderItemService {
     }
 
     public List<OrderItemResponseDto> findOrderItemsBySessionCode(String sessionCode) {
-        return orderItemRepository.findAllBySessionCodeAndIsDeletedFlase(sessionCode).stream()
+        return orderItemRepository.findAllBySessionCodeAndIsDeletedFalse(sessionCode).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     } 
