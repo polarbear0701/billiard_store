@@ -12,5 +12,5 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, UUID> {
     Optional<OrderItem> findByOrderItemCodeAndIsDeletedFalse(String orderItemCode);
     Optional<OrderItem> findByIdAndIsDeletedFalse(UUID id);
     List<OrderItem> findByIsDeletedFalse();
-    List<OrderItem> findAllBySessionCode(String sessionCode);
+    List<OrderItem> findAllBySessionCodeAndIsDeletedFlase(String sessionCode);
 }

@@ -126,7 +126,7 @@ public class OrderItemService {
     }
 
     public List<OrderItemResponseDto> findOrderItemsBySessionCode(String sessionCode) {
-        return orderItemRepository.findAllBySessionCode(sessionCode).stream()
+        return orderItemRepository.findAllBySessionCodeAndIsDeletedFlase(sessionCode).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     } 
@@ -134,6 +134,7 @@ public class OrderItemService {
     public void delete(UUID id) {
         OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+        productService.updateStock(orderItem.getProductCode(), orderItem.getQuantity(), false);
         orderItem.setIsDeleted(true);
         orderItemRepository.save(orderItem);
     }
