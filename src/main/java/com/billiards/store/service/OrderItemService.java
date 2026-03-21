@@ -1,5 +1,6 @@
 package com.billiards.store.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -80,6 +81,31 @@ public class OrderItemService {
         return orderItemRepository.findByIsDeletedFalse().stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    public BigDecimal calculateOrderItemFnbFee(String orderItemCode) {
+        OrderItem orderItem = orderItemRepository.findByOrderItemCodeAndIsDeletedFalse(orderItemCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+        BigDecimal unitPrice = orderItem.getPrice();
+        int quantity = orderItem.getQuantity();
+        return unitPrice.multiply(BigDecimal.valueOf(quantity));
+    }
+
+    public BigDecimal calculateTotalFnbFee(String playSessionCode) {
+        List<OrderItemResponseDto> allOrders = findOrderItemsBySessionCode(playSessionCode);
+
+        BigDecimal total = new BigDecimal(0);
+
+        for (OrderItemResponseDto order: allOrders) {
+            total = total.add(
+                order.getPrice().multiply(BigDecimal.valueOf(
+                    order.getQuantity()
+                ))
+            );
+        }
+
+        return total;
+                
     }
 
     @Transactional
