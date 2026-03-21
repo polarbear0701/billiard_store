@@ -12,4 +12,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
     Optional<Invoice> findByInvoiceCodeAndIsDeletedFalse(String invoiceCode);
     Optional<Invoice> findByIdAndIsDeletedFalse(UUID id);
     List<Invoice> findByIsDeletedFalse();
+    boolean existsBySessionCodeAndIsDeletedFalse(String sessionCode);
 }

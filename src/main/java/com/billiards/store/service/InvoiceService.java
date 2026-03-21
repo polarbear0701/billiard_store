@@ -1,5 +1,6 @@
 package com.billiards.store.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -13,34 +14,49 @@ import com.billiards.store.dto.invoice.InvoiceResponseDto;
 import com.billiards.store.model.Invoice;
 import com.billiards.store.repository.InvoiceRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final CodeGeneratorUtil codeGeneratorUtil;
     private final PlaySessionService playSessionService;
+    private final OrderItemService orderItemService;
 
     public InvoiceService(
         InvoiceRepository invoiceRepository,
         CodeGeneratorUtil codeGeneratorUtil,
-        PlaySessionService playSessionService
+        PlaySessionService playSessionService,
+        OrderItemService orderItemService
     ) {
         this.invoiceRepository = invoiceRepository;
         this.codeGeneratorUtil = codeGeneratorUtil;
         this.playSessionService = playSessionService;
+        this.orderItemService = orderItemService;
     }
 
+    @Transactional
     public InvoiceResponseDto create(InvoiceRequestDto requestDto) {
+
+        playSessionService.endPlaySession(requestDto.getSessionCode());
+
+        if (invoiceRepository.existsBySessionCodeAndIsDeletedFalse(requestDto.getSessionCode())) {
+            throw new ResourceNotFoundException("This session already has invoice generated");
+        }
+        
         Invoice invoice = new Invoice();
         invoice.setInvoiceCode(
             codeGeneratorUtil.generateCode("INV", "invoice_code_seq")
         );
 
-        validateReferenceCode(requestDto.getSessionCode());
+        BigDecimal tableFee = playSessionService.calculateTableFee(requestDto.getSessionCode());
+        BigDecimal fnbFee = orderItemService.calculateTotalFnbFee(requestDto.getSessionCode());
 
         invoice.setSessionCode(requestDto.getSessionCode());
-        invoice.setTableFee(requestDto.getTableFee());
-        invoice.setFnbFee(requestDto.getFnbFee());
-        invoice.setTotalAmount(requestDto.getTotalAmount());
+        invoice.setTableFee(tableFee);
+        invoice.setFnbFee(fnbFee);
+        invoice.setTotalAmount(tableFee.add(fnbFee));
+        
         
         Invoice savedInvoice = invoiceRepository.save(invoice);
         return convertToResponseDto(savedInvoice);
@@ -69,9 +85,9 @@ public class InvoiceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
 
         invoice.setSessionCode(requestDto.getSessionCode());
-        invoice.setTableFee(requestDto.getTableFee());
-        invoice.setFnbFee(requestDto.getFnbFee());
-        invoice.setTotalAmount(requestDto.getTotalAmount());
+        // invoice.setTableFee(requestDto.getTableFee());
+        // invoice.setFnbFee(requestDto.getFnbFee());
+        // invoice.setTotalAmount(requestDto.getTotalAmount());
         
         Invoice updatedInvoice = invoiceRepository.save(invoice);
         return convertToResponseDto(updatedInvoice);
@@ -82,14 +98,6 @@ public class InvoiceService {
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
         invoice.setIsDeleted(true);
         invoiceRepository.save(invoice);
-    }
-
-    private void validateReferenceCode(String sessionCode) {
-        if (sessionCode == null || sessionCode.trim().isEmpty()) {
-            throw new ResourceNotFoundException("Session code cannot be empty");
-        } 
-        
-        playSessionService.findBySessionCode(sessionCode);
     }
 
     private InvoiceResponseDto convertToResponseDto(Invoice invoice) {
