@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -53,6 +55,28 @@ public class GlobalExceptionHandler {
         
         HttpStatus responseStatus = HttpStatus.BAD_REQUEST;
         ErrorResponse error = new ErrorResponse(responseStatus.value(), message, LocalDateTime.now());
+        return new ResponseEntity<>(error, responseStatus);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(BadCredentialsException ex) {
+        HttpStatus responseStatus = HttpStatus.UNAUTHORIZED;
+        ErrorResponse error = new ErrorResponse(
+            responseStatus.value(), 
+            "Invalid username or password", 
+            LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, responseStatus);
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex) {
+        HttpStatus responseStatus = HttpStatus.UNAUTHORIZED;
+        ErrorResponse error = new ErrorResponse(
+            responseStatus.value(), 
+            ex.getMessage(), 
+            LocalDateTime.now()
+        );
         return new ResponseEntity<>(error, responseStatus);
     }
 }
