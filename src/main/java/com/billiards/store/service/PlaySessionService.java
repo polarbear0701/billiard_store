@@ -91,21 +91,20 @@ public class PlaySessionService {
         return convertToResponseDto(session);
     }
 
-    public Long calculatePlayTime(String playSessionCode) {
-        PlaySession playSession = playSessionRepository.findBySessionCodeAndIsDeletedFalse(playSessionCode)
-                .orElseThrow(() -> new ResourceNotFoundException("No play session found"));
-        if (playSession.getEndTime() == null || playSession.getStartTime() == null) {
+    public Long calculatePlayTime(PlaySession session) {
+        if (session.getEndTime() == null || session.getStartTime() == null) {
             throw new ResourceNotFoundException("No endtime or start time found");
         }
-        long duration = Duration.between(playSession.getStartTime(), playSession.getEndTime()).toMinutes();
+        long duration = Duration.between(session.getStartTime(), session.getEndTime()).toMinutes();
         return duration;
     }
 
     public BigDecimal calculateTableFee(String playSessionCode) {
-        Long playTime = calculatePlayTime(playSessionCode);
 
         PlaySession playSession = playSessionRepository.findBySessionCodeAndIsDeletedFalse(playSessionCode)
             .orElseThrow(() -> new ResourceNotFoundException("No play session found"));
+
+        Long playTime = calculatePlayTime(playSession);
 
         BigDecimal pricePerHour = billiardTableService.getTablePricePerHour(playSession.getTableCode());
 
