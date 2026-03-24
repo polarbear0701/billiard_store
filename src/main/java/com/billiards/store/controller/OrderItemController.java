@@ -44,6 +44,17 @@ public class OrderItemController {
         ));
     }
 
+    @PostMapping("/cancel/{orderItemCode}")
+    public ResponseEntity<SuccessResponse<?>> cancelOrder(@PathVariable String orderItemCode) {
+        orderItemService.cancelOrder(orderItemCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Order cancelled successfully",
+                null,
+                LocalDateTime.now()
+        ));
+    }
+
     @GetMapping
     public ResponseEntity<SuccessResponse<?>> findAll() {
         List<OrderItemResponseDto> itemsDto = orderItemService.findAll();

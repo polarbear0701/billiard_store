@@ -140,6 +140,10 @@ public class PlaySessionService {
         playSessionRepository.save(session);
     }
 
+    public SessionStatus checkCurrentSessionStatus(String sessionCode) {
+        return findBySessionCode(sessionCode).getSessionStatus();
+    }
+
     private PlaySessionResponseDto convertToResponseDto(PlaySession session) {
         PlaySessionResponseDto dto = new PlaySessionResponseDto();
         dto.setSessionCode(session.getSessionCode());

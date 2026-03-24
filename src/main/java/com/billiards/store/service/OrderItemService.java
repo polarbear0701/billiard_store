@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.billiards.store.common.enumerated.SessionStatus;
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.order_item.OrderItemRequestDto;
@@ -106,6 +107,20 @@ public class OrderItemService {
 
         return total;
                 
+    }
+
+    @Transactional
+    public void cancelOrder(String orderItemCode) {
+        OrderItem order = orderItemRepository.findByOrderItemCodeAndIsDeletedFalse(orderItemCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+        
+        if (playSessionService.checkCurrentSessionStatus(order.getSessionCode()) == SessionStatus.ACTIVE){
+            productService.updateStock(order.getProductCode(), order.getQuantity(), false);
+            order.setIsDeleted(true);
+            orderItemRepository.save(order);
+        } else {
+            throw new ResourceNotFoundException("Cannot cancel this order, as session has been completed");
+        }
     }
 
     @Transactional
