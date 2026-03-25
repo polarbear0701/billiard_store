@@ -115,6 +115,16 @@ public class PlaySessionService {
         return pricePerHour.multiply(hours).setScale(2, RoundingMode.HALF_UP);
     }
 
+    public PlaySessionResponseDto getCurrentSessionOfOccupiedTable(String tableCode) {
+        if (billiardTableService.getTableStatus(tableCode) != TableStatus.OCCUPIED) {
+            throw new ResourceNotFoundException("Table is currently not in session");
+        }
+
+        PlaySession playSession = playSessionRepository.findByTableCodeAndSessionStatusAndIsDeletedFalse(tableCode, SessionStatus.ACTIVE)
+                .orElseThrow(() -> new ResourceNotFoundException("This table is not having any session"));
+        return convertToResponseDto(playSession);
+    }
+
     public List<PlaySessionResponseDto> findAll() {
         return playSessionRepository.findByIsDeletedFalse().stream()
                 .map(this::convertToResponseDto)

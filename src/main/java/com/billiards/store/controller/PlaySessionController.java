@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -88,13 +90,25 @@ public class PlaySessionController {
         ));
     }
 
+    @GetMapping("/current")
+    public ResponseEntity<SuccessResponse<?>> getCurrentTableSession(@RequestParam("tableCode") String tableCode) {
+        PlaySessionResponseDto playSessionResponseDto = playSessionService.getCurrentSessionOfOccupiedTable(tableCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Play session deleted successfully",
+                playSessionResponseDto,
+                LocalDateTime.now()
+        ));
+    }
+    
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
         playSessionService.delete(id);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Play session deleted successfully",
+                "success",
                 null,
                 LocalDateTime.now()
         ));

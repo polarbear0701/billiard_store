@@ -69,6 +69,11 @@ public class BilliardTableService {
                 .collect(Collectors.toList());
     }
 
+    public TableStatus getTableStatus(String tableCode) {
+        return billiardTableRepository.findStatusByTableCode(tableCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+    }
+
     public BilliardTableResponseDto update(UUID id, BilliardTableRequestDto requestDto) {
         BilliardTable table = billiardTableRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Billiard table not found"));
