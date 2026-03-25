@@ -77,17 +77,6 @@ public class BilliardTableController {
         ));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody BilliardTableRequestDto request) {
-        BilliardTableResponseDto updatedDto = billiardTableService.update(id, request);
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                "success",
-                updatedDto,
-                LocalDateTime.now()
-        ));
-    }
-
     @PutMapping("/occupy/{tableCode}/{newStatus}")
     public ResponseEntity<SuccessResponse<?>> setStatusTable(@PathVariable String tableCode, @PathVariable TableStatus newStatus) {
         BilliardTableResponseDto responseDto = billiardTableService.setStatusTable(tableCode, newStatus);

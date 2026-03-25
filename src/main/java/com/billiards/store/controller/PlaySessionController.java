@@ -88,16 +88,6 @@ public class PlaySessionController {
         ));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody PlaySessionRequestDto request) {
-        PlaySessionResponseDto updatedDto = playSessionService.update(id, request);
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                "success",
-                updatedDto,
-                LocalDateTime.now()
-        ));
-    }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {

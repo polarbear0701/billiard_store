@@ -76,17 +76,6 @@ public class InvoiceController {
         ));
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> update(@PathVariable UUID id, @RequestBody InvoiceRequestDto request) {
-        InvoiceResponseDto updatedDto = invoiceService.update(id, request);
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                "success",
-                updatedDto,
-                LocalDateTime.now()
-        ));
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
         invoiceService.delete(id);

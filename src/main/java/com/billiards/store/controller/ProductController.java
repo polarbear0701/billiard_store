@@ -1,5 +1,6 @@
 package com.billiards.store.controller;
 
+import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -77,18 +79,7 @@ public class ProductController {
         ));
     }
 
-    @PutMapping("/{productCode}")
-    public ResponseEntity<SuccessResponse<?>> update(@PathVariable String productCode, @RequestBody ProductRequestDto request) {
-        ProductResponseDto updatedDto = productService.update(productCode, request);
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                "success",
-                updatedDto,
-                LocalDateTime.now()
-        ));
-    }
-
-    @PutMapping("/update-stock/{productCode}")
+    @PutMapping("/update-stock/quantity/{productCode}")
     public ResponseEntity<SuccessResponse<?>> updateProductQuantity(@PathVariable String productCode, @RequestBody ProductUpdateStockDto productUpdateStockDto) {
         productService.updateStock(productCode, productUpdateStockDto.getAmountToUpdate(), productUpdateStockDto.isDecrement());
         
@@ -99,8 +90,8 @@ public class ProductController {
             LocalDateTime.now()));
     }
 
-    @PutMapping("/update-stock/{productCode}/{newStockPrice}")
-    public ResponseEntity<SuccessResponse<?>> updateProductPrice(@PathVariable String productCode, @PathVariable int newStockPrice) {
+    @PutMapping("/update-stock/price/{productCode}")
+    public ResponseEntity<SuccessResponse<?>> updateProductPrice(@PathVariable String productCode, @RequestParam("newPrice") int newStockPrice) {
         productService.updatePrice(productCode, newStockPrice);
         
         return ResponseEntity.ok(new SuccessResponse<>(
