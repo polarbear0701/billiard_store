@@ -17,6 +17,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.billiards.store.common.util.AuthTokenFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
@@ -47,9 +48,17 @@ public class SecurityConfig {
     }
 
     @Bean 
-    public SecurityFilterChain filterChain(HttpSecurity httpSecurity, AuthTokenFilter authTokenFilter, 
-            CustomAuthenticationEntryPoint unauthorizedHandler, CustomAccessDeniedHandler accessDeniedHandler) throws Exception {
-        httpSecurity.csrf(csrf -> csrf.disable())
+    public SecurityFilterChain filterChain(
+        HttpSecurity httpSecurity, 
+        AuthTokenFilter authTokenFilter, 
+        CustomAuthenticationEntryPoint unauthorizedHandler, 
+        CustomAccessDeniedHandler accessDeniedHandler,
+        CorsConfigurationSource corsConfigurationSource) throws Exception {
+        
+        
+        httpSecurity
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
+            .csrf(csrf -> csrf.disable())
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(unauthorizedHandler)
                 .accessDeniedHandler(accessDeniedHandler)
