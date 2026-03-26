@@ -45,7 +45,7 @@ public class ProductController {
         ));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<SuccessResponse<?>> findAll() {
         List<ProductResponseDto> productsDto = productService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(
