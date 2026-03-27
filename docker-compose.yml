@@ -5,6 +5,7 @@ services:
     ports:
       - "15678:15678"
     environment:
+      - TZ=Asia/Ho_Chi_Minh
       - SERVER_PORT=${SERVER_PORT}
       - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME}
