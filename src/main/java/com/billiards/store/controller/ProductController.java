@@ -78,9 +78,9 @@ public class ProductController {
         ));
     }
 
-    @PutMapping("/update-stock/quantity/{productCode}")
+    @PutMapping("/update/quantity/{productCode}")
     public ResponseEntity<SuccessResponse<?>> updateProductQuantity(@PathVariable String productCode, @RequestBody ProductUpdateStockDto productUpdateStockDto) {
-        productService.updateStock(productCode, productUpdateStockDto.getAmountToUpdate(), productUpdateStockDto.isDecrement());
+        productService.updateStock(productCode, productUpdateStockDto);
         
         return ResponseEntity.ok(new SuccessResponse<>(
             HttpStatus.ACCEPTED.value(), 

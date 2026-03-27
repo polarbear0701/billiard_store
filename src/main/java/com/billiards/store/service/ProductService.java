@@ -11,6 +11,7 @@ import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.product.ProductRequestDto;
 import com.billiards.store.dto.product.ProductResponseDto;
+import com.billiards.store.dto.product.ProductUpdateStockDto;
 import com.billiards.store.model.Product;
 import com.billiards.store.repository.ProductRepository;
 
@@ -76,22 +77,17 @@ public class ProductService {
         return convertToResponseDto(updatedProduct);
     }
 
-    public void updateStock(String productCode, int amountToUpdate, boolean isDecrement) {
+    public void updateStock(String productCode, ProductUpdateStockDto productUpdateStockDto) {
         Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        if (productUpdateStockDto.isDecrement()) {
+            if (product.getQuantity() < productUpdateStockDto.getAmountToUpdate()) {
+                throw new ResourceNotFoundException("Not enough stock available");
+            }
 
-        if (product.getQuantity() < amountToUpdate) {
-            throw new IllegalArgumentException("Not enough stock available");
-        }
-
-        if (product.getQuantity() <= 0) {
-            throw new ResourceNotFoundException("Out of stock");
-        }
-
-        if (isDecrement) {
-            product.setQuantity(product.getQuantity() - amountToUpdate);
+            product.setQuantity(product.getQuantity() - productUpdateStockDto.getAmountToUpdate());
         } else {
-            product.setQuantity(product.getQuantity() + amountToUpdate);
+            product.setQuantity(product.getQuantity() + productUpdateStockDto.getAmountToUpdate());
         }
 
         productRepository.save(product);

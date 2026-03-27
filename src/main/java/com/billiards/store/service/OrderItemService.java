@@ -13,6 +13,7 @@ import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.dto.order_item.OrderItemRequestDto;
 import com.billiards.store.dto.order_item.OrderItemResponseDto;
 import com.billiards.store.dto.product.ProductResponseDto;
+import com.billiards.store.dto.product.ProductUpdateStockDto;
 import com.billiards.store.model.OrderItem;
 import com.billiards.store.repository.OrderItemRepository;
 
@@ -59,8 +60,9 @@ public class OrderItemService {
         orderItem.setQuantity(requestDto.getQuantity());
 
         orderItem.setPrice(productResponseDto.getPrice());
+        ProductUpdateStockDto productUpdateStockDto = new ProductUpdateStockDto(true, requestDto.getQuantity());
 
-        productService.updateStock(requestDto.getProductCode(), requestDto.getQuantity(), true);
+        productService.updateStock(requestDto.getProductCode(), productUpdateStockDto);
         
         OrderItem savedOrderItem = orderItemRepository.save(orderItem);
         OrderItemResponseDto orderItemResponseDto =  convertToResponseDto(savedOrderItem);
@@ -118,7 +120,8 @@ public class OrderItemService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
         
         if (playSessionService.checkCurrentSessionStatus(order.getSessionCode()) == SessionStatus.ACTIVE){
-            productService.updateStock(order.getProductCode(), order.getQuantity(), false);
+            ProductUpdateStockDto productUpdateStockDto = new ProductUpdateStockDto(false, order.getQuantity());
+            productService.updateStock(order.getProductCode(), productUpdateStockDto);
             order.setIsDeleted(true);
             orderItemRepository.save(order);
         } else {
@@ -152,7 +155,8 @@ public class OrderItemService {
     public void delete(UUID id) {
         OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
-        productService.updateStock(orderItem.getProductCode(), orderItem.getQuantity(), false);
+        ProductUpdateStockDto productUpdateStockDto = new ProductUpdateStockDto(false, orderItem.getQuantity());
+        productService.updateStock(orderItem.getProductCode(), productUpdateStockDto);
         orderItem.setIsDeleted(true);
         orderItemRepository.save(orderItem);
     }

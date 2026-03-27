@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductUpdateStockDto {
-    private boolean isDecrement;
+    private boolean decrement;
     private int amountToUpdate;
 }
