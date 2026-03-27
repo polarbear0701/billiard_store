@@ -104,8 +104,8 @@ public class ProductService {
         productRepository.save(product);
     }
 
-    public void delete(UUID id) {
-        Product product = productRepository.findByIdAndIsDeletedFalse(id)
+    public void delete(String productCode) {
+        Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         product.setIsDeleted(true);
         productRepository.save(product);
