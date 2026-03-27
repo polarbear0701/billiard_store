@@ -42,7 +42,7 @@ public class InvoiceController {
         ));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<SuccessResponse<?>> findAll() {
         List<InvoiceResponseDto> invoicesDto = invoiceService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(

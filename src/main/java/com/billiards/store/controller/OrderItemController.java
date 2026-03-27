@@ -54,7 +54,7 @@ public class OrderItemController {
         ));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<SuccessResponse<?>> findAll() {
         List<OrderItemResponseDto> itemsDto = orderItemService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(

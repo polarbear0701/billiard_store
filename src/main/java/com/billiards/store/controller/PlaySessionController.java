@@ -45,7 +45,7 @@ public class PlaySessionController {
         ));
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<SuccessResponse<?>> findAll() {
         List<PlaySessionResponseDto> sessionsDto = playSessionService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(
