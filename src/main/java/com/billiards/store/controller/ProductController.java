@@ -100,9 +100,9 @@ public class ProductController {
             LocalDateTime.now()));
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
-        productService.delete(id);
+    @DeleteMapping("/{productCode}")
+    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable String productCode) {
+        productService.delete(productCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
                 "Product deleted successfully",
