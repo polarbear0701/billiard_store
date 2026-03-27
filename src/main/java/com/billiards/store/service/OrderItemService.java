@@ -63,7 +63,10 @@ public class OrderItemService {
         productService.updateStock(requestDto.getProductCode(), requestDto.getQuantity(), true);
         
         OrderItem savedOrderItem = orderItemRepository.save(orderItem);
-        return convertToResponseDto(savedOrderItem);
+        OrderItemResponseDto orderItemResponseDto =  convertToResponseDto(savedOrderItem);
+        orderItemResponseDto.setProductName(productResponseDto.getName());
+
+        return orderItemResponseDto;
     }
 
     public OrderItemResponseDto findById(UUID id) {

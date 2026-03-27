@@ -92,8 +92,12 @@ public class PlaySessionService {
     }
 
     public Long calculatePlayTime(PlaySession session) {
-        if (session.getEndTime() == null || session.getStartTime() == null) {
-            throw new ResourceNotFoundException("No endtime or start time found");
+        if (session.getStartTime() == null) {
+            throw new ResourceNotFoundException("No start time found");
+        }
+
+        if (session.getEndTime() == null) {
+            return Duration.between(session.getStartTime(), LocalDateTime.now()).toMinutes();
         }
         long duration = Duration.between(session.getStartTime(), session.getEndTime()).toMinutes();
         return duration;

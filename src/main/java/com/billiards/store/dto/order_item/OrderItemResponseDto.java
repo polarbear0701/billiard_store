@@ -16,6 +16,7 @@ public class OrderItemResponseDto {
     private String orderItemCode;
     private String sessionCode;
     private String productCode;
+    private String productName;
     private int quantity;
     private BigDecimal price;
     private LocalDateTime createdAt;
