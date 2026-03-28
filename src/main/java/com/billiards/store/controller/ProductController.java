@@ -89,6 +89,16 @@ public class ProductController {
             LocalDateTime.now()));
     }
 
+    @PutMapping("/update/clear/{productCode}")
+    public ResponseEntity<SuccessResponse<?>> clearStockQuantity(@PathVariable String productCode) {
+        productService.clearStock(productCode);
+        return ResponseEntity.ok(new SuccessResponse<>(
+            HttpStatus.ACCEPTED.value(), 
+            "success", 
+            null, 
+            LocalDateTime.now()));
+    }
+
     @PutMapping("/update-stock/price/{productCode}")
     public ResponseEntity<SuccessResponse<?>> updateProductPrice(@PathVariable String productCode, @RequestParam("newPrice") int newStockPrice) {
         productService.updatePrice(productCode, newStockPrice);
