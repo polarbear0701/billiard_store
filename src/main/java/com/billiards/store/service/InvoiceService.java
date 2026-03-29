@@ -80,17 +80,11 @@ public class InvoiceService {
                 .collect(Collectors.toList());
     }
 
-    public InvoiceResponseDto update(UUID id, InvoiceRequestDto requestDto) {
-        Invoice invoice = invoiceRepository.findByIdAndIsDeletedFalse(id)
+    public void completeInvoice(String invoiceCode) {
+        Invoice invoice = invoiceRepository.findByInvoiceCodeAndIsDeletedFalse(invoiceCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
-
-        invoice.setSessionCode(requestDto.getSessionCode());
-        // invoice.setTableFee(requestDto.getTableFee());
-        // invoice.setFnbFee(requestDto.getFnbFee());
-        // invoice.setTotalAmount(requestDto.getTotalAmount());
-        
-        Invoice updatedInvoice = invoiceRepository.save(invoice);
-        return convertToResponseDto(updatedInvoice);
+        invoice.setComplete(true);
+        invoiceRepository.save(invoice);
     }
 
     public void delete(UUID id) {
