@@ -18,6 +18,7 @@ public class InvoiceResponseDto {
     private BigDecimal tableFee;
     private BigDecimal fnbFee;
     private BigDecimal totalAmount;
+    private boolean complete;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;

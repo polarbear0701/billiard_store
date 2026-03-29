@@ -121,6 +121,7 @@ public class InvoiceService {
         dto.setTableFee(invoice.getTableFee());
         dto.setFnbFee(invoice.getFnbFee());
         dto.setTotalAmount(invoice.getTotalAmount());
+        dto.setComplete(invoice.isComplete());
         dto.setCreatedAt(invoice.getCreatedAt());
         dto.setUpdatedAt(invoice.getUpdatedAt());
         dto.setCreatedBy(invoice.getCreatedBy());
