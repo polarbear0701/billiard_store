@@ -29,4 +29,6 @@ public class Invoice extends BaseEntity {
     private BigDecimal fnbFee;
     
     private BigDecimal totalAmount;
+
+    private boolean complete;
 }

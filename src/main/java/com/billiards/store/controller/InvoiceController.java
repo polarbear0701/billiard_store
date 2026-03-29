@@ -15,10 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 
 @RestController
@@ -73,6 +76,30 @@ public class InvoiceController {
                 invoiceDto,
                 LocalDateTime.now()
         ));
+    }
+
+    @GetMapping("/qr")
+    public ResponseEntity<SuccessResponse<?>> getQRCodeForInvoice(@RequestParam String invoiceCode) {
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                invoiceService.generateBankTransaction(invoiceCode),
+                LocalDateTime.now()
+        ));
+    }
+    
+
+    @PutMapping("/complete")
+    public ResponseEntity<SuccessResponse<?>> putMethodName(@RequestParam String invoiceCode) {
+        invoiceService.completeInvoice(invoiceCode);
+        
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                null,
+                LocalDateTime.now()
+        ));
+        
     }
 
     @DeleteMapping("/{id}")

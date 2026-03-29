@@ -1,5 +1,6 @@
 package com.billiards.store.repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -37,4 +38,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
                 "GROUP BY to_char(created_at, 'YYYY-MM') " +
                 "ORDER BY label", nativeQuery = true)
     List<Object[]> findMonthlyRevenue(@Param("start") LocalDateTime start, @Param("end") LocalDateTime end);
+    @Query("SELECT i.totalAmount FROM Invoice i WHERE i.invoiceCode = :invoiceCode AND i.isDeleted = false")
+    Optional<BigDecimal> findTotalAmountByInvoiceCode(@Param("invoiceCode") String invoiceCode);
 }
