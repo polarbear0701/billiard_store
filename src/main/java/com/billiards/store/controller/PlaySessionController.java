@@ -78,6 +78,17 @@ public class PlaySessionController {
         ));
     }
 
+    @GetMapping("/fee")
+    public ResponseEntity<SuccessResponse<?>> getCurrentFee(String playSessionCode) {
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                playSessionService.calculateTableFee(playSessionCode),
+                LocalDateTime.now()
+        ));
+    }
+    
+
     @PutMapping("/close/{sessionCode}")
     public ResponseEntity<SuccessResponse<?>> closePlaySession(@PathVariable String sessionCode) {
         playSessionService.endPlaySession(sessionCode);
