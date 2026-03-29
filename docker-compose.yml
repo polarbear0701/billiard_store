@@ -12,6 +12,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
+      - BANK_URL=${BANK_URL}
     restart: always
   tunnel:
     image: cloudflare/cloudflared:latest

@@ -78,6 +78,17 @@ public class InvoiceController {
         ));
     }
 
+    @GetMapping("/qr")
+    public ResponseEntity<SuccessResponse<?>> getQRCodeForInvoice(@RequestParam String invoiceCode) {
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                invoiceService.generateBankTransaction(invoiceCode),
+                LocalDateTime.now()
+        ));
+    }
+    
+
     @PutMapping("/complete")
     public ResponseEntity<SuccessResponse<?>> putMethodName(@RequestParam String invoiceCode) {
         invoiceService.completeInvoice(invoiceCode);

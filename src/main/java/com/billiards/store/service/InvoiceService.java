@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.exception.ResourceNotFoundException;
@@ -22,17 +23,20 @@ public class InvoiceService {
     private final CodeGeneratorUtil codeGeneratorUtil;
     private final PlaySessionService playSessionService;
     private final OrderItemService orderItemService;
+    private final String BANK_URL;
 
     public InvoiceService(
         InvoiceRepository invoiceRepository,
         CodeGeneratorUtil codeGeneratorUtil,
         PlaySessionService playSessionService,
-        OrderItemService orderItemService
+        OrderItemService orderItemService,
+        @Value("${app.bankUrl}") String BANK_URL
     ) {
         this.invoiceRepository = invoiceRepository;
         this.codeGeneratorUtil = codeGeneratorUtil;
         this.playSessionService = playSessionService;
         this.orderItemService = orderItemService;
+        this.BANK_URL = BANK_URL;
     }
 
     @Transactional
@@ -72,6 +76,22 @@ public class InvoiceService {
         Invoice invoice = invoiceRepository.findByInvoiceCodeAndIsDeletedFalse(invoiceCode)
             .orElseThrow(() -> new ResourceNotFoundException("No invoice associated with this invoice code. Please try again"));
         return convertToResponseDto(invoice);
+    }
+
+    public BigDecimal getTotalAmount(String invoiceCode) {
+        return invoiceRepository.findTotalAmountByInvoiceCode(invoiceCode)
+            .orElseThrow(() -> new ResourceNotFoundException("Cannot find this invoice"));
+    }
+
+    public String generateBankTransaction(String invoiceCode) {
+        BigDecimal totalAmount = getTotalAmount(invoiceCode);
+        // amount=100000&addInfo=Test&accountName=Phan%20Trong%20Nguyen
+        String qrURL = BANK_URL 
+            + String.format("amount=%.0f&", totalAmount.doubleValue())
+            + String.format("addInfo=%s&", "Chuyen khoan tien Bida 298")
+            + String.format("accountName=%s", "Phan%20Trong%20Nguyen");
+        return qrURL;
+
     }
 
     public List<InvoiceResponseDto> findAll() {
