@@ -93,6 +93,13 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    public void updateStockName(String productCode, String newProductName) {
+        Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        product.setName(newProductName);
+        productRepository.save(product);
+    }
+
     public void clearStock(String productCode) {
         Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found"));

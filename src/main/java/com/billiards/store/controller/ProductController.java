@@ -78,6 +78,18 @@ public class ProductController {
         ));
     }
 
+    @PutMapping("/update/name/{productCode}")
+    public ResponseEntity<SuccessResponse<?>> updateProductName(@PathVariable String productCode, @RequestParam String newProductName) {
+        productService.updateStockName(productCode, newProductName);
+        
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                String.format("Product name has been changed to %s", newProductName),
+                LocalDateTime.now()
+        ));
+    }
+
     @PutMapping("/update/quantity/{productCode}")
     public ResponseEntity<SuccessResponse<?>> updateProductQuantity(@PathVariable String productCode, @RequestBody ProductUpdateStockDto productUpdateStockDto) {
         productService.updateStock(productCode, productUpdateStockDto);
@@ -99,7 +111,7 @@ public class ProductController {
             LocalDateTime.now()));
     }
 
-    @PutMapping("/update-stock/price/{productCode}")
+    @PutMapping("/update/price/{productCode}")
     public ResponseEntity<SuccessResponse<?>> updateProductPrice(@PathVariable String productCode, @RequestParam("newPrice") int newStockPrice) {
         productService.updatePrice(productCode, newStockPrice);
         
