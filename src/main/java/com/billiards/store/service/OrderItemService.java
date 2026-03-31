@@ -130,6 +130,29 @@ public class OrderItemService {
     }
 
     @Transactional
+    public void updateOrderQuantity(String orderItemCode, int newQuantity) {
+        OrderItem order = orderItemRepository.findByOrderItemCodeAndIsDeletedFalse(orderItemCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+        
+        if (newQuantity <= 0 || newQuantity == order.getQuantity()) {
+            throw new ResourceNotFoundException("Invalid new quantity");
+        }
+        if (playSessionService.checkCurrentSessionStatus(order.getSessionCode()) == SessionStatus.ACTIVE){
+            if (newQuantity < order.getQuantity()) {
+                ProductUpdateStockDto productUpdateStockDto = new ProductUpdateStockDto(false, order.getQuantity() - newQuantity);
+                productService.updateStock(order.getProductCode(), productUpdateStockDto);
+            } else {
+                ProductUpdateStockDto productUpdateStockDto = new ProductUpdateStockDto(true, newQuantity -  order.getQuantity() );
+                productService.updateStock(order.getProductCode(), productUpdateStockDto);
+            }
+            order.setQuantity(newQuantity);
+            orderItemRepository.save(order);
+        } else {
+            throw new ResourceNotFoundException("Cannot cancel this order, as session has been completed");
+        }
+    }
+
+    @Transactional
     public OrderItemResponseDto update(UUID id, OrderItemRequestDto requestDto) {
         OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));

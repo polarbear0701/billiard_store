@@ -15,10 +15,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.PutMapping;
+
 
 
 
@@ -94,6 +97,17 @@ public class OrderItemController {
                 HttpStatus.OK.value(),
                 "success",
                 itemsDto,
+                LocalDateTime.now()
+        ));
+    }
+
+    @PutMapping("/update/quantity")
+    public ResponseEntity<SuccessResponse<?>> updateOrderItemQuantity(@RequestParam String orderItemCode, @RequestParam int newQuantity) {
+        orderItemService.updateOrderQuantity(orderItemCode, newQuantity);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "success",
+                null,
                 LocalDateTime.now()
         ));
     }
