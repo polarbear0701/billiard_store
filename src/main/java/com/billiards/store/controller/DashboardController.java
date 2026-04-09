@@ -1,19 +1,19 @@
 package com.billiards.store.controller;
 
 import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.billiards.store.dto.dashboard.ChartDataDto;
+import com.billiards.store.common.base.SuccessResponse;
 import com.billiards.store.service.DashboardService;
 
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
@@ -26,24 +26,33 @@ public class DashboardController {
         this.dashboardService = dashboardService;
     }
 
-    @GetMapping("/revenue/today")
-    @Operation(summary = "Get hourly revenue for today")
-    public ResponseEntity<List<ChartDataDto>> getRevenueToday() {
-        return ResponseEntity.ok(dashboardService.getRevenueToday());
+    @GetMapping("/total-revenue/by-date")
+    public ResponseEntity<SuccessResponse<?>> getTotalRevenueByDate(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return ResponseEntity.ok(new SuccessResponse<>(
+            HttpStatus.OK.value(),
+            "success",
+            dashboardService.getTotalRevenueByDate(date),
+            LocalDateTime.now()
+        ));
     }
 
-    @GetMapping("/revenue/range")
-    @Operation(summary = "Get daily revenue between two dates")
-    public ResponseEntity<List<ChartDataDto>> getRevenueByRange(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(dashboardService.getRevenueByRange(startDate, endDate));
+    @GetMapping("/total-revenue/by-date-range")
+    public ResponseEntity<SuccessResponse<?>> getTotalRevenueByDateRange(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return ResponseEntity.ok(new SuccessResponse<>(
+            HttpStatus.OK.value(),
+            "success",
+            dashboardService.getTotalRevenueByDateRange(startDate, endDate),
+            LocalDateTime.now()
+        ));
     }
 
-    @GetMapping("/revenue/year")
-    @Operation(summary = "Get monthly revenue for a specific year")
-    public ResponseEntity<List<ChartDataDto>> getRevenueByYear(
-            @RequestParam int year) {
-        return ResponseEntity.ok(dashboardService.getRevenueByYear(year));
+    @GetMapping("/total-revenue/by-year")
+    public ResponseEntity<SuccessResponse<?>> getTotalRevenueByYear(@RequestParam int year) {
+        return ResponseEntity.ok(new SuccessResponse<>(
+            HttpStatus.OK.value(),
+            "success",
+            dashboardService.getTotalRevenueByYear(year),
+            LocalDateTime.now()
+        ));
     }
 }
