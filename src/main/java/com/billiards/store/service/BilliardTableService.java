@@ -13,6 +13,9 @@ import com.billiards.store.dto.billiard_table.BilliardTableRequestDto;
 import com.billiards.store.dto.billiard_table.BilliardTableResponseDto;
 import com.billiards.store.model.BilliardTable;
 import com.billiards.store.repository.BilliardTableRepository;
+
+import jakarta.transaction.Transactional;
+
 import com.billiards.store.common.enumerated.TableStatus;
 
 @Service
@@ -84,6 +87,27 @@ public class BilliardTableService {
         
         BilliardTable updatedTable = billiardTableRepository.save(table);
         return convertToResponseDto(updatedTable);
+    }
+
+    @Transactional
+    public BilliardTableResponseDto updateTablePrice(String tableCode, BigDecimal newPricePerHour) {
+        BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
+                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        table.setPricePerHour(newPricePerHour);
+        if (table.getTableStatus() == TableStatus.OCCUPIED) {
+            throw new ResourceNotFoundException("Table is currently in use. Cannot change the price");
+        }
+
+        if (newPricePerHour.compareTo(BigDecimal.valueOf(0)) <= 0) {
+            throw new ResourceNotFoundException("Price cannot be smaller than or equal to 0");
+        }
+
+        try {
+            BilliardTable updatedTable = billiardTableRepository.save(table);
+            return convertToResponseDto(updatedTable);
+        } catch (Exception e) {
+            throw new ResourceNotFoundException("Failed to update table price");
+        }    
     }
 
     public void delete(String tableCode) {

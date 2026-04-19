@@ -17,7 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -83,6 +85,17 @@ public class BilliardTableController {
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
                 "Status changed successfully",
+                responseDto,
+                LocalDateTime.now()
+        ));
+    }
+
+    @PutMapping("/update-price")
+    public ResponseEntity<SuccessResponse<?>> updateTablePrice(@RequestParam String tableCode, @RequestParam BigDecimal newPricePerHour) {
+        BilliardTableResponseDto responseDto = billiardTableService.updateTablePrice(tableCode, newPricePerHour);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.OK.value(),
+                "Table price updated successfully",
                 responseDto,
                 LocalDateTime.now()
         ));
