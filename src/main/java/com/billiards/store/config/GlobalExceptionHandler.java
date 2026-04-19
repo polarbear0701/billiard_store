@@ -12,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.billiards.store.common.base.ErrorResponse;
 import com.billiards.store.common.exception.ResourceNotFoundException;
@@ -75,6 +76,17 @@ public class GlobalExceptionHandler {
         ErrorResponse error = new ErrorResponse(
             responseStatus.value(), 
             ex.getMessage(), 
+            LocalDateTime.now()
+        );
+        return new ResponseEntity<>(error, responseStatus);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex) {
+        HttpStatus responseStatus = HttpStatus.BAD_REQUEST;
+        ErrorResponse error = new ErrorResponse(
+            responseStatus.value(), 
+            "Invalid value for parameter '" + ex.getName() + "'", 
             LocalDateTime.now()
         );
         return new ResponseEntity<>(error, responseStatus);
