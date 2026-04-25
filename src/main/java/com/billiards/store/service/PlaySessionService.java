@@ -17,6 +17,7 @@ import com.billiards.store.common.enumerated.SessionStatus;
 import com.billiards.store.common.enumerated.TableStatus;
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
+import com.billiards.store.dto.play_session.AdjustStartTimeRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionResponseDto;
 import com.billiards.store.model.PlaySession;
@@ -59,8 +60,25 @@ public class PlaySessionService {
         billiardTableService.setStatusTable(tableCode, TableStatus.OCCUPIED);
 
         session.setSessionStatus(requestDto.getSessionStatus());
+        session.setStartTime(LocalDateTime.now());
         
         PlaySession savedSession = playSessionRepository.save(session);
+        return convertToResponseDto(savedSession);
+    }
+
+    public PlaySessionResponseDto adjustStartTime(String playSessionCode, AdjustStartTimeRequestDto newStartTimeRequestDto) {
+        PlaySession playSession = playSessionRepository.findBySessionCodeAndIsDeletedFalse(playSessionCode)
+                .orElseThrow(() -> new ResourceNotFoundException("No play session associated with this session code. Please try again"));
+        if (playSession.getSessionStatus() == SessionStatus.COMPLETED) {
+            throw new ResourceNotFoundException("Session is already completed. Please try again");
+        }
+
+        if (newStartTimeRequestDto.getStartTime().isAfter(LocalDateTime.now())) {
+            throw new ResourceNotFoundException("New start time is in the future. Please try again");
+        }
+
+        playSession.setStartTime(newStartTimeRequestDto.getStartTime());
+        PlaySession savedSession = playSessionRepository.save(playSession);
         return convertToResponseDto(savedSession);
     }
 

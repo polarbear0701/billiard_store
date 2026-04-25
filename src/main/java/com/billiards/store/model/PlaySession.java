@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import com.billiards.store.common.base.BaseEntity;
 import com.billiards.store.common.enumerated.SessionStatus;
 
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import jakarta.persistence.Column;
@@ -32,7 +31,6 @@ public class PlaySession extends BaseEntity {
     
     private String tableCode;
     
-    @CreatedDate
     private LocalDateTime startTime;
     
     private LocalDateTime endTime;

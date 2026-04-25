@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.billiards.store.common.base.SuccessResponse;
+import com.billiards.store.dto.play_session.AdjustStartTimeRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionResponseDto;
 import com.billiards.store.service.PlaySessionService;
@@ -45,6 +46,16 @@ public class PlaySessionController {
         ));
     }
 
+    @PutMapping("/start-time/{sessionCode}")
+    public ResponseEntity<SuccessResponse<?>> adjustStartTime(@PathVariable String sessionCode, @RequestBody AdjustStartTimeRequestDto requestDto) {
+        PlaySessionResponseDto responseDto = playSessionService.adjustStartTime(sessionCode, requestDto);
+        return ResponseEntity.ok(new SuccessResponse<>(
+                HttpStatus.ACCEPTED.value(),
+                "success",
+                responseDto,
+                LocalDateTime.now()
+        ));
+    }
     @GetMapping("/all")
     public ResponseEntity<SuccessResponse<?>> findAll() {
         List<PlaySessionResponseDto> sessionsDto = playSessionService.findAll();
