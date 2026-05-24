@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.billiards.store.common.enumerated.SessionStatus;
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.order_item.OrderItemRequestDto;
 import com.billiards.store.dto.order_item.OrderItemResponseDto;
 import com.billiards.store.dto.product.ProductResponseDto;
@@ -73,13 +74,13 @@ public class OrderItemService {
 
     public OrderItemResponseDto findById(UUID id) {
         OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("order_item_not_found")));
         return convertToResponseDto(orderItem);
     }
 
     public OrderItemResponseDto findByOrderItemCode(String orderItemCode) {
         OrderItem orderItem = orderItemRepository.findByOrderItemCodeAndIsDeletedFalse(orderItemCode)
-            .orElseThrow(() -> new ResourceNotFoundException("No order item associated with this order item code. Please try again"));
+            .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("order_item_not_found")));
         return convertToResponseDto(orderItem);
     }
 
@@ -91,7 +92,7 @@ public class OrderItemService {
 
     public BigDecimal calculateOrderItemFnbFee(String orderItemCode) {
         OrderItem orderItem = orderItemRepository.findByOrderItemCodeAndIsDeletedFalse(orderItemCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("order_item_not_found")));
         BigDecimal unitPrice = orderItem.getPrice();
         int quantity = orderItem.getQuantity();
         return unitPrice.multiply(BigDecimal.valueOf(quantity));
@@ -117,7 +118,7 @@ public class OrderItemService {
     @Transactional
     public void cancelOrder(String orderItemCode) {
         OrderItem order = orderItemRepository.findByOrderItemCodeAndIsDeletedFalse(orderItemCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("order_item_not_found")));
         
         if (playSessionService.checkCurrentSessionStatus(order.getSessionCode()) == SessionStatus.ACTIVE){
             ProductUpdateStockDto productUpdateStockDto = new ProductUpdateStockDto(false, order.getQuantity());
@@ -125,17 +126,17 @@ public class OrderItemService {
             order.setIsDeleted(true);
             orderItemRepository.save(order);
         } else {
-            throw new ResourceNotFoundException("Cannot cancel this order, as session has been completed");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("session_completed"));
         }
     }
 
     @Transactional
     public void updateOrderQuantity(String orderItemCode, int newQuantity) {
         OrderItem order = orderItemRepository.findByOrderItemCodeAndIsDeletedFalse(orderItemCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("order_item_not_found")));
         
         if (newQuantity <= 0 || newQuantity == order.getQuantity()) {
-            throw new ResourceNotFoundException("Invalid new quantity");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("invalid_quantity"));
         }
         if (playSessionService.checkCurrentSessionStatus(order.getSessionCode()) == SessionStatus.ACTIVE){
             if (newQuantity < order.getQuantity()) {
@@ -148,14 +149,14 @@ public class OrderItemService {
             order.setQuantity(newQuantity);
             orderItemRepository.save(order);
         } else {
-            throw new ResourceNotFoundException("Cannot cancel this order, as session has been completed");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("session_completed"));
         }
     }
 
     @Transactional
     public OrderItemResponseDto update(UUID id, OrderItemRequestDto requestDto) {
         OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("order_item_not_found")));
 
         orderItem.setSessionCode(requestDto.getSessionCode());
         orderItem.setProductCode(requestDto.getProductCode());
@@ -177,7 +178,7 @@ public class OrderItemService {
 
     public void delete(UUID id) {
         OrderItem orderItem = orderItemRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Order item not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("order_item_not_found")));
         ProductUpdateStockDto productUpdateStockDto = new ProductUpdateStockDto(false, orderItem.getQuantity());
         productService.updateStock(orderItem.getProductCode(), productUpdateStockDto);
         orderItem.setIsDeleted(true);
@@ -188,13 +189,13 @@ public class OrderItemService {
         OrderItemRequestDto requestDto
     ) {
         if (requestDto.getSessionCode() == null || requestDto.getSessionCode().trim().isEmpty()) {
-            throw new ResourceNotFoundException("Session code cannot be empty");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("session_code_empty"));
         }
         if (requestDto.getProductCode() == null || requestDto.getProductCode().trim().isEmpty()) {
-            throw new ResourceNotFoundException("Product code cannot be empty");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("product_code_empty"));
         }
         if (requestDto.getQuantity() <= 0) {
-            throw new ResourceNotFoundException("Quantity cannot be less than 0");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("invalid_quantity"));
         }
 
     }

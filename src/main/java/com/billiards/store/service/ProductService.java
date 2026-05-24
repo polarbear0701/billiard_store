@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.product.ProductRequestDto;
 import com.billiards.store.dto.product.ProductResponseDto;
 import com.billiards.store.dto.product.ProductUpdateStockDto;
@@ -43,19 +44,19 @@ public class ProductService {
 
     public BigDecimal getProductPrice(String productCode) {
         Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
-                .orElseThrow(() -> new ResourceNotFoundException("No product found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("product_not_found")));
         return product.getPrice();
     }
 
     public ProductResponseDto findById(UUID id) {
         Product product = productRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("product_not_found")));
         return convertToResponseDto(product);
     }
 
     public ProductResponseDto findByProductCode(String productCode) {
         Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
-            .orElseThrow(() -> new ResourceNotFoundException("No product associated with this product code. Please try again"));
+            .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("product_not_found")));
         return convertToResponseDto(product);
     }
 
@@ -67,7 +68,7 @@ public class ProductService {
 
     public ProductResponseDto update(String productCode, ProductRequestDto requestDto) {
         Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("product_not_found")));
 
         product.setName(requestDto.getName());
         product.setQuantity(requestDto.getQuantity());
@@ -79,10 +80,10 @@ public class ProductService {
 
     public void updateStock(String productCode, ProductUpdateStockDto productUpdateStockDto) {
         Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("product_not_found")));
         if (productUpdateStockDto.isDecrement()) {
             if (product.getQuantity() < productUpdateStockDto.getAmountToUpdate()) {
-                throw new ResourceNotFoundException("Not enough stock available");
+                throw new ResourceNotFoundException(SystemLanguage.getMessage("insufficient_stock"));
             }
 
             product.setQuantity(product.getQuantity() - productUpdateStockDto.getAmountToUpdate());
@@ -95,7 +96,7 @@ public class ProductService {
 
     public void updateStockName(String productCode, String newProductName) {
         Product product = productRepository.findByProductCodeAndIsDeletedFalse(productCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("product_not_found")));
         product.setName(newProductName);
         productRepository.save(product);
     }

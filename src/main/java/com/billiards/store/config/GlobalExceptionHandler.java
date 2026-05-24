@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.billiards.store.common.base.ErrorResponse;
 import com.billiards.store.common.exception.ResourceNotFoundException;
+import com.billiards.store.common.util.SystemLanguage;
 
 import tools.jackson.databind.exc.InvalidFormatException;
 
@@ -31,7 +32,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
-        String message = "Malformed JSON request";
+        String message = SystemLanguage.getMessage("malformed_json");
         logger.info(ex.getCause().toString());
         if (ex.getCause() instanceof InvalidFormatException) {
             InvalidFormatException ifx = (InvalidFormatException) ex.getCause();
@@ -63,7 +64,7 @@ public class GlobalExceptionHandler {
         HttpStatus responseStatus = HttpStatus.UNAUTHORIZED;
         ErrorResponse error = new ErrorResponse(
             responseStatus.value(), 
-            "Invalid username or password", 
+            SystemLanguage.getMessage("login_failed"), 
             LocalDateTime.now()
         );
         return new ResponseEntity<>(error, responseStatus);

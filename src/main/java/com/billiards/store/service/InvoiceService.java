@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.invoice.InvoiceRequestDto;
 import com.billiards.store.dto.invoice.InvoiceResponseDto;
 import com.billiards.store.model.Invoice;
@@ -45,7 +46,7 @@ public class InvoiceService {
         playSessionService.endPlaySession(requestDto.getSessionCode());
 
         if (invoiceRepository.existsBySessionCodeAndIsDeletedFalse(requestDto.getSessionCode())) {
-            throw new ResourceNotFoundException("This session already has invoice generated");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("invoice_already_exists"));
         }
         
         Invoice invoice = new Invoice();
@@ -68,19 +69,19 @@ public class InvoiceService {
 
     public InvoiceResponseDto findById(UUID id) {
         Invoice invoice = invoiceRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("invoice_not_found")));
         return convertToResponseDto(invoice);
     }
 
     public InvoiceResponseDto findByInvoiceCode(String invoiceCode) {
         Invoice invoice = invoiceRepository.findByInvoiceCodeAndIsDeletedFalse(invoiceCode)
-            .orElseThrow(() -> new ResourceNotFoundException("No invoice associated with this invoice code. Please try again"));
+            .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("invoice_not_found")));
         return convertToResponseDto(invoice);
     }
 
     public BigDecimal getTotalAmount(String invoiceCode) {
         return invoiceRepository.findTotalAmountByInvoiceCode(invoiceCode)
-            .orElseThrow(() -> new ResourceNotFoundException("Cannot find this invoice"));
+            .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("invoice_not_found")));
     }
 
     public String generateBankTransaction(String invoiceCode) {
@@ -102,14 +103,14 @@ public class InvoiceService {
 
     public void completeInvoice(String invoiceCode) {
         Invoice invoice = invoiceRepository.findByInvoiceCodeAndIsDeletedFalse(invoiceCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("invoice_not_found")));
         invoice.setComplete(true);
         invoiceRepository.save(invoice);
     }
 
     public void delete(UUID id) {
         Invoice invoice = invoiceRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Invoice not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("invoice_not_found")));
         invoice.setIsDeleted(true);
         invoiceRepository.save(invoice);
     }

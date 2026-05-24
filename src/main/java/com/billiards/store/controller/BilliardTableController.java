@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.billiards.store.common.base.SuccessResponse;
 import com.billiards.store.common.enumerated.TableStatus;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.billiard_table.BilliardTableRequestDto;
 import com.billiards.store.dto.billiard_table.BilliardTableResponseDto;
 import com.billiards.store.service.BilliardTableService;
@@ -40,7 +41,7 @@ public class BilliardTableController {
         BilliardTableResponseDto responseDto = billiardTableService.create(request);
         return ResponseEntity.ok(new SuccessResponse<>(
             HttpStatus.ACCEPTED.value(),
-            "success", 
+            SystemLanguage.getMessage("create_success"), 
             responseDto, 
             LocalDateTime.now()));
     }
@@ -50,7 +51,7 @@ public class BilliardTableController {
         List<BilliardTableResponseDto> tablesDto = billiardTableService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 tablesDto,
                 LocalDateTime.now()
         ));
@@ -61,7 +62,7 @@ public class BilliardTableController {
         BilliardTableResponseDto responseDto = billiardTableService.findById(id);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 responseDto,
                 LocalDateTime.now()
 
@@ -73,7 +74,7 @@ public class BilliardTableController {
         BilliardTableResponseDto tableDto = billiardTableService.findByTableCode(tableCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 tableDto,
                 LocalDateTime.now()
         ));
@@ -84,7 +85,7 @@ public class BilliardTableController {
         BilliardTableResponseDto responseDto = billiardTableService.setStatusTable(tableCode, newStatus);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Status changed successfully",
+                SystemLanguage.getMessage("update_success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -95,7 +96,7 @@ public class BilliardTableController {
         BilliardTableResponseDto responseDto = billiardTableService.updateTablePrice(tableCode, newPricePerHour);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Table price updated successfully",
+                SystemLanguage.getMessage("update_success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -106,7 +107,7 @@ public class BilliardTableController {
         billiardTableService.delete(tableCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Billiard table deleted successfully",
+                SystemLanguage.getMessage("delete_success"),
                 null,
                 LocalDateTime.now()
         ));

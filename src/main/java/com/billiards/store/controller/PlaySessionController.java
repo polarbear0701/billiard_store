@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.billiards.store.common.base.SuccessResponse;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.play_session.AdjustStartTimeRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionResponseDto;
@@ -40,7 +41,7 @@ public class PlaySessionController {
         PlaySessionResponseDto responseDto = playSessionService.create(request);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.ACCEPTED.value(),
-                "success",
+                SystemLanguage.getMessage("create_success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -51,7 +52,7 @@ public class PlaySessionController {
         PlaySessionResponseDto responseDto = playSessionService.adjustStartTime(sessionCode, requestDto);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.ACCEPTED.value(),
-                "success",
+                SystemLanguage.getMessage("update_success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -61,7 +62,7 @@ public class PlaySessionController {
         List<PlaySessionResponseDto> sessionsDto = playSessionService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 sessionsDto,
                 LocalDateTime.now()
         ));
@@ -72,7 +73,7 @@ public class PlaySessionController {
         PlaySessionResponseDto responseDto = playSessionService.findById(id);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -83,7 +84,7 @@ public class PlaySessionController {
         PlaySessionResponseDto sessionDto = playSessionService.findBySessionCode(sessionCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 sessionDto,
                 LocalDateTime.now()
         ));
@@ -93,7 +94,7 @@ public class PlaySessionController {
     public ResponseEntity<SuccessResponse<?>> getCurrentFee(String playSessionCode) {
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 playSessionService.calculateTableFee(playSessionCode),
                 LocalDateTime.now()
         ));
@@ -106,7 +107,7 @@ public class PlaySessionController {
         
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Session closed successfully",
+                SystemLanguage.getMessage("session_ended"),
                 null,
                 LocalDateTime.now()
         ));
@@ -117,7 +118,7 @@ public class PlaySessionController {
         PlaySessionResponseDto playSessionResponseDto = playSessionService.getCurrentSessionOfOccupiedTable(tableCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Play session deleted successfully",
+                SystemLanguage.getMessage("success"),
                 playSessionResponseDto,
                 LocalDateTime.now()
         ));

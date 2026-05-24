@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.billiards.store.common.base.SuccessResponse;
 import com.billiards.store.common.util.JwtUtils;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.auth.LoginRequestDto;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,7 +47,7 @@ public class AuthController {
         
         SuccessResponse<Map<String, String>> response = new SuccessResponse<>(
             HttpStatus.OK.value(),
-            "Login successful",
+            SystemLanguage.getMessage("login_success"),
             Map.of("token", jwt),
             LocalDateTime.now()
         );

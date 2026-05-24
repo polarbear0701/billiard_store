@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.billiards.store.common.base.SuccessResponse;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.order_item.OrderItemRequestDto;
 import com.billiards.store.dto.order_item.OrderItemResponseDto;
 import com.billiards.store.service.OrderItemService;
@@ -40,7 +41,7 @@ public class OrderItemController {
         OrderItemResponseDto responseDto = orderItemService.create(request);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.ACCEPTED.value(),
-                "success",
+                SystemLanguage.getMessage("create_success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -51,7 +52,7 @@ public class OrderItemController {
         orderItemService.cancelOrder(orderItemCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Order cancelled successfully",
+                SystemLanguage.getMessage("delete_success"),
                 null,
                 LocalDateTime.now()
         ));
@@ -62,7 +63,7 @@ public class OrderItemController {
         List<OrderItemResponseDto> itemsDto = orderItemService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 itemsDto,
                 LocalDateTime.now()
         ));
@@ -73,7 +74,7 @@ public class OrderItemController {
         OrderItemResponseDto responseDto = orderItemService.findById(id);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -84,7 +85,7 @@ public class OrderItemController {
         OrderItemResponseDto itemDto = orderItemService.findByOrderItemCode(orderItemCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 itemDto,
                 LocalDateTime.now()
         ));
@@ -95,7 +96,7 @@ public class OrderItemController {
         List<OrderItemResponseDto> itemsDto = orderItemService.findOrderItemsBySessionCode(sessionCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 itemsDto,
                 LocalDateTime.now()
         ));
@@ -106,7 +107,7 @@ public class OrderItemController {
         orderItemService.updateOrderQuantity(orderItemCode, newQuantity);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("update_success"),
                 null,
                 LocalDateTime.now()
         ));
@@ -117,7 +118,7 @@ public class OrderItemController {
         orderItemService.delete(id);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Order item deleted successfully",
+                SystemLanguage.getMessage("delete_success"),
                 null,
                 LocalDateTime.now()
         ));

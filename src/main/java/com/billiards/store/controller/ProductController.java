@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.billiards.store.common.base.SuccessResponse;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.product.ProductRequestDto;
 import com.billiards.store.dto.product.ProductResponseDto;
 import com.billiards.store.dto.product.ProductUpdateStockDto;
@@ -39,7 +40,7 @@ public class ProductController {
         ProductResponseDto responseDto = productService.create(request);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.ACCEPTED.value(),
-                "success",
+                SystemLanguage.getMessage("create_success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -50,7 +51,7 @@ public class ProductController {
         List<ProductResponseDto> productsDto = productService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 productsDto,
                 LocalDateTime.now()
         ));
@@ -61,7 +62,7 @@ public class ProductController {
         ProductResponseDto responseDto = productService.findById(id);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -72,7 +73,7 @@ public class ProductController {
         ProductResponseDto productDto = productService.findByProductCode(productCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 productDto,
                 LocalDateTime.now()
         ));
@@ -84,7 +85,7 @@ public class ProductController {
         
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("update_success"),
                 String.format("Product name has been changed to %s", newProductName),
                 LocalDateTime.now()
         ));
@@ -96,7 +97,7 @@ public class ProductController {
         
         return ResponseEntity.ok(new SuccessResponse<>(
             HttpStatus.ACCEPTED.value(), 
-            "success", 
+            SystemLanguage.getMessage("update_success"), 
             null, 
             LocalDateTime.now()));
     }
@@ -106,7 +107,7 @@ public class ProductController {
         productService.clearStock(productCode);
         return ResponseEntity.ok(new SuccessResponse<>(
             HttpStatus.ACCEPTED.value(), 
-            "success", 
+            SystemLanguage.getMessage("delete_success"), 
             null, 
             LocalDateTime.now()));
     }
@@ -117,7 +118,7 @@ public class ProductController {
         
         return ResponseEntity.ok(new SuccessResponse<>(
             HttpStatus.ACCEPTED.value(), 
-            "success", 
+            SystemLanguage.getMessage("update_success"), 
             null, 
             LocalDateTime.now()));
     }

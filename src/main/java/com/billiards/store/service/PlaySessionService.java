@@ -17,6 +17,7 @@ import com.billiards.store.common.enumerated.SessionStatus;
 import com.billiards.store.common.enumerated.TableStatus;
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.play_session.AdjustStartTimeRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionRequestDto;
 import com.billiards.store.dto.play_session.PlaySessionResponseDto;
@@ -68,13 +69,13 @@ public class PlaySessionService {
 
     public PlaySessionResponseDto adjustStartTime(String playSessionCode, AdjustStartTimeRequestDto newStartTimeRequestDto) {
         PlaySession playSession = playSessionRepository.findBySessionCodeAndIsDeletedFalse(playSessionCode)
-                .orElseThrow(() -> new ResourceNotFoundException("No play session associated with this session code. Please try again"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("session_not_found")));
         if (playSession.getSessionStatus() == SessionStatus.COMPLETED) {
-            throw new ResourceNotFoundException("Session is already completed. Please try again");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("session_completed"));
         }
 
         if (newStartTimeRequestDto.getStartTime().isAfter(LocalDateTime.now())) {
-            throw new ResourceNotFoundException("New start time is in the future. Please try again");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("start_time_future"));
         }
 
         playSession.setStartTime(newStartTimeRequestDto.getStartTime());
@@ -84,11 +85,11 @@ public class PlaySessionService {
 
     public void endPlaySession(String playSessionCode) {
         PlaySession playSession = playSessionRepository.findBySessionCodeAndIsDeletedFalse(playSessionCode)
-                .orElseThrow(() -> new ResourceNotFoundException(playSessionCode));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("session_not_found")));
         
         if ((playSession.getEndTime() != null) || (playSession.getSessionStatus() != SessionStatus.ACTIVE)) {
             logger.info("In here");
-            throw new ResourceNotFoundException("Session is already closed or cancelled");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("session_closed"));
         }
 
         playSession.setEndTime(LocalDateTime.now());
@@ -99,19 +100,19 @@ public class PlaySessionService {
 
     public PlaySessionResponseDto findById(UUID id) {
         PlaySession session = playSessionRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Play session not found"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("session_not_found")));
         return convertToResponseDto(session);
     }
 
     public PlaySessionResponseDto findBySessionCode(String sessionCode) {
         PlaySession session = playSessionRepository.findBySessionCodeAndIsDeletedFalse(sessionCode)
-            .orElseThrow(() -> new ResourceNotFoundException("No play session associated with this session code. Please try again"));
+            .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("session_not_found")));
         return convertToResponseDto(session);
     }
 
     public Long calculatePlayTime(PlaySession session) {
         if (session.getStartTime() == null) {
-            throw new ResourceNotFoundException("No start time found");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("no_start_time"));
         }
 
         if (session.getEndTime() == null) {
@@ -124,7 +125,7 @@ public class PlaySessionService {
     public BigDecimal calculateTableFee(String playSessionCode) {
 
         PlaySession playSession = playSessionRepository.findBySessionCodeAndIsDeletedFalse(playSessionCode)
-            .orElseThrow(() -> new ResourceNotFoundException("No play session found"));
+            .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("session_not_found")));
 
         Long playTime = calculatePlayTime(playSession);
 
@@ -139,11 +140,11 @@ public class PlaySessionService {
 
     public PlaySessionResponseDto getCurrentSessionOfOccupiedTable(String tableCode) {
         if (billiardTableService.getTableStatus(tableCode) != TableStatus.OCCUPIED) {
-            throw new ResourceNotFoundException("Table is currently not in session");
+            throw new ResourceNotFoundException(SystemLanguage.getMessage("table_not_in_session"));
         }
 
         PlaySession playSession = playSessionRepository.findByTableCodeAndSessionStatusAndIsDeletedFalse(tableCode, SessionStatus.ACTIVE)
-                .orElseThrow(() -> new ResourceNotFoundException("This table is not having any session"));
+                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("table_no_session")));
         return convertToResponseDto(playSession);
     }
 

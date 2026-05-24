@@ -4,6 +4,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.billiards.store.common.base.SuccessResponse;
+import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.invoice.InvoiceRequestDto;
 import com.billiards.store.dto.invoice.InvoiceResponseDto;
 import com.billiards.store.service.InvoiceService;
@@ -39,7 +40,7 @@ public class InvoiceController {
         InvoiceResponseDto responseDto = invoiceService.create(request);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.ACCEPTED.value(),
-                "success",
+                SystemLanguage.getMessage("create_success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -50,7 +51,7 @@ public class InvoiceController {
         List<InvoiceResponseDto> invoicesDto = invoiceService.findAll();
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 invoicesDto,
                 LocalDateTime.now()
         ));
@@ -61,7 +62,7 @@ public class InvoiceController {
         InvoiceResponseDto responseDto = invoiceService.findById(id);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 responseDto,
                 LocalDateTime.now()
         ));
@@ -72,7 +73,7 @@ public class InvoiceController {
         InvoiceResponseDto invoiceDto = invoiceService.findByInvoiceCode(invoiceCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 invoiceDto,
                 LocalDateTime.now()
         ));
@@ -82,7 +83,7 @@ public class InvoiceController {
     public ResponseEntity<SuccessResponse<?>> getQRCodeForInvoice(@RequestParam String invoiceCode) {
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("success"),
                 invoiceService.generateBankTransaction(invoiceCode),
                 LocalDateTime.now()
         ));
@@ -95,7 +96,7 @@ public class InvoiceController {
         
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "success",
+                SystemLanguage.getMessage("invoice_paid"),
                 null,
                 LocalDateTime.now()
         ));
@@ -107,7 +108,7 @@ public class InvoiceController {
         invoiceService.delete(id);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Invoice deleted successfully",
+                SystemLanguage.getMessage("delete_success"),
                 null,
                 LocalDateTime.now()
         ));
