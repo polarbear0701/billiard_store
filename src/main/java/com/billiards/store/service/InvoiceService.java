@@ -108,8 +108,8 @@ public class InvoiceService {
         invoiceRepository.save(invoice);
     }
 
-    public void delete(UUID id) {
-        Invoice invoice = invoiceRepository.findByIdAndIsDeletedFalse(id)
+    public void delete(String invoiceCode) {
+        Invoice invoice = invoiceRepository.findByInvoiceCodeAndIsDeletedFalse(invoiceCode)
                 .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("invoice_not_found")));
         invoice.setIsDeleted(true);
         invoiceRepository.save(invoice);

@@ -104,8 +104,8 @@ public class InvoiceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable UUID id) {
-        invoiceService.delete(id);
+    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable String invoiceCode) {
+        invoiceService.delete(invoiceCode);
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
                 SystemLanguage.getMessage("delete_success"),
