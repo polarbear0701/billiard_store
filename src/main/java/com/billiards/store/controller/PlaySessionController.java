@@ -91,7 +91,7 @@ public class PlaySessionController {
     }
 
     @GetMapping("/fee")
-    public ResponseEntity<SuccessResponse<?>> getCurrentFee(String playSessionCode) {
+    public ResponseEntity<SuccessResponse<?>> getCurrentFee(@RequestParam String playSessionCode) {
         return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
                 SystemLanguage.getMessage("success"),
