@@ -171,6 +171,7 @@ public class OrderItemService {
     }
 
     public List<OrderItemResponseDto> findOrderItemsBySessionCode(String sessionCode) {
+    
         return orderItemRepository.findAllBySessionCodeAndIsDeletedFalse(sessionCode).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
@@ -211,6 +212,15 @@ public class OrderItemService {
         dto.setUpdatedAt(orderItem.getUpdatedAt());
         dto.setCreatedBy(orderItem.getCreatedBy());
         dto.setUpdatedBy(orderItem.getUpdatedBy());
+        return dto;
+    }
+
+    private OrderItemResponseDto convertToResponseDto(Object[] object) {
+        OrderItemResponseDto dto = new OrderItemResponseDto();
+        dto.setProductCode((String) object[0]);
+        dto.setQuantity((int) object[1]);
+        dto.setPrice((BigDecimal) object[2]);
+        dto.setProductName((String) object[4]);
         return dto;
     }
 }
