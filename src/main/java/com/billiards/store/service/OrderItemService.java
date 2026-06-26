@@ -220,7 +220,7 @@ public class OrderItemService {
         dto.setProductCode((String) object[0]);
         dto.setQuantity((int) object[1]);
         dto.setPrice((BigDecimal) object[2]);
-        dto.setProductName((String) object[4]);
+        dto.setProductName((String) object[3]);
         return dto;
     }
 }
