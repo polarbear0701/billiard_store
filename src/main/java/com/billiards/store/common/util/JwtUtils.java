@@ -103,6 +103,7 @@ public class JwtUtils {
                 logger.warn("Token type mismatch. Expected: {}, Got: {}", expectedTokenType, tokenType);
                 return false;
             }
+            logger.info("Token validate successfully");
             return true;
         } catch (ExpiredJwtException e) {
             logger.debug("Token expired: {}", e.getMessage());

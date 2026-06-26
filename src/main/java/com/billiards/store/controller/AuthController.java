@@ -15,7 +15,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -153,10 +152,11 @@ public class AuthController {
     }
 
     @PostMapping("/validate")
-    public ResponseEntity<SuccessResponse<?>> validateToken(
-        @RequestHeader(value = "Authorization", required = false) String authHeader
+    public ResponseEntity<SuccessResponse<?>> validateRefreshToken(
+        @RequestBody String refreshToken
     ) {
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (!jwtUtils.validateJwtToken(refreshToken, "REFRESH")) {
+       		logger.warn("Token type is not REFRESH");
             return ResponseEntity.ok(new SuccessResponse<>(
                 HttpStatus.OK.value(),
                 "Token validation result",
@@ -165,30 +165,20 @@ public class AuthController {
             ));
         }
 
-        String token = authHeader.substring(7);
-
-        if (!jwtUtils.validateJwtToken(token, "ACCESS")) {
-            return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                "Token validation result",
-                new ValidateTokenResponseDto(false, null, 0),
-                LocalDateTime.now()
-            ));
-        }
+        logger.info("Token type is REFRESH");
 
         try {
-            String username = jwtUtils.getUserNameFromJwtToken(token);
-            long expiresIn = Math.max(jwtUtils.getRemainingExpirationMs(token), 0);
-
+            String username = jwtUtils.getUserNameFromJwtToken(refreshToken);
+            long expiresIn = Math.max(jwtUtils.getRemainingExpirationMs(refreshToken), 0);
             ValidateTokenResponseDto result = new ValidateTokenResponseDto(
-                true,
+                expiresIn > 0,
                 username,
                 expiresIn
             );
 
             SuccessResponse<ValidateTokenResponseDto> response = new SuccessResponse<>(
                 HttpStatus.OK.value(),
-                "Token is valid",
+                expiresIn > 0 ? "Token is valid" : "Token is invalid",
                 result,
                 LocalDateTime.now()
             );
