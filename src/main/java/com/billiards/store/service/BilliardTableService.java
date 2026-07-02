@@ -1,12 +1,6 @@
 package com.billiards.store.service;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
-
-import org.springframework.stereotype.Service;
-
+import com.billiards.store.common.enumerated.TableStatus;
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.common.util.SystemLanguage;
@@ -14,8 +8,12 @@ import com.billiards.store.dto.billiard_table.BilliardTableRequestDto;
 import com.billiards.store.dto.billiard_table.BilliardTableResponseDto;
 import com.billiards.store.model.BilliardTable;
 import com.billiards.store.repository.BilliardTableRepository;
-
 import jakarta.transaction.Transactional;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
 
 import com.billiards.store.common.enumerated.TableStatus;
 
@@ -29,6 +27,7 @@ import com.billiards.store.common.enumerated.TableStatus;
  * checks, and data transformation between model and DTO formats.</p>*/
 @Service
 public class BilliardTableService {
+
     private final BilliardTableRepository billiardTableRepository;
     private final CodeGeneratorUtil codeGeneratorUtil;
 
@@ -93,8 +92,13 @@ public class BilliardTableService {
      * @throws ResourceNotFoundException if no non-deleted table exists with the provided ID.
      */
     public BilliardTableResponseDto findById(UUID id) {
-        BilliardTable table = billiardTableRepository.findByIdAndIsDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found")));
+        BilliardTable table = billiardTableRepository
+            .findByIdAndIsDeletedFalse(id)
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    SystemLanguage.getMessage("table_not_found")
+                )
+            );
         return convertToResponseDto(table);
     }
 
@@ -110,8 +114,13 @@ public class BilliardTableService {
      * @throws ResourceNotFoundException if no table exists with the provided code or it has been soft-deleted.
      */
     public BilliardTableResponseDto findByTableCode(String tableCode) {
-        BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
-            .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found")));
+        BilliardTable table = billiardTableRepository
+            .findByTableCodeAndIsDeletedFalse(tableCode)
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    SystemLanguage.getMessage("table_not_found")
+                )
+            );
         return convertToResponseDto(table);
     }
 
@@ -127,8 +136,13 @@ public class BilliardTableService {
      * @throws ResourceNotFoundException if no non-deleted table exists with the provided code.
      */
     public BigDecimal getTablePricePerHour(String tableCode) {
-        BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
-                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found")));
+        BilliardTable table = billiardTableRepository
+            .findByTableCodeAndIsDeletedFalse(tableCode)
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    SystemLanguage.getMessage("table_not_found")
+                )
+            );
         return table.getPricePerHour();
     }
 
@@ -143,9 +157,11 @@ public class BilliardTableService {
      *         active tables in the system.
      */
     public List<BilliardTableResponseDto> findAll() {
-        return billiardTableRepository.findByIsDeletedFalse().stream()
-                .map(this::convertToResponseDto)
-                .collect(Collectors.toList());
+        return billiardTableRepository
+            .findByIsDeletedFalse()
+            .stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -160,8 +176,11 @@ public class BilliardTableService {
      * @throws ResourceNotFoundException if no non-deleted table exists with the provided code.
      */
     public TableStatus getTableStatus(String tableCode) {
-        return billiardTableRepository.findStatusByTableCode(tableCode)
-            .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        return billiardTableRepository
+            .findStatusByTableCode(tableCode)
+            .orElseThrow(() ->
+                new ResourceNotFoundException("Table not found")
+            );
     }
 
     /**
@@ -206,16 +225,28 @@ public class BilliardTableService {
      * @throws ResourceNotFoundException if the table is occupied, price is invalid, or no table exists.
      */
     @Transactional
-    public BilliardTableResponseDto updateTablePrice(String tableCode, BigDecimal newPricePerHour) {
-        BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
-                .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found")));
+    public BilliardTableResponseDto updateTablePrice(
+        String tableCode,
+        BigDecimal newPricePerHour
+    ) {
+        BilliardTable table = billiardTableRepository
+            .findByTableCodeAndIsDeletedFalse(tableCode)
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    SystemLanguage.getMessage("table_not_found")
+                )
+            );
         table.setPricePerHour(newPricePerHour);
         if (table.getTableStatus() == TableStatus.OCCUPIED) {
-            throw new ResourceNotFoundException(SystemLanguage.getMessage("table_in_use"));
+            throw new ResourceNotFoundException(
+                SystemLanguage.getMessage("table_in_use")
+            );
         }
 
         if (newPricePerHour.compareTo(BigDecimal.valueOf(0)) <= 0) {
-            throw new ResourceNotFoundException(SystemLanguage.getMessage("price_must_be_positive"));
+            throw new ResourceNotFoundException(
+                SystemLanguage.getMessage("price_must_be_positive")
+            );
         }
 
         try {
@@ -262,17 +293,28 @@ public class BilliardTableService {
                 .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found")));
 
         if (table.getTableStatus() == newStatus) {
-            throw new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found"));
+            throw new ResourceNotFoundException(
+                SystemLanguage.getMessage("table_not_found")
+            );
         }
 
-        if (table.getTableStatus() == TableStatus.MAINTENANCE && newStatus == TableStatus.OCCUPIED) {
-            throw new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found"));
+        if (
+            table.getTableStatus() == TableStatus.MAINTENANCE &&
+            newStatus == TableStatus.OCCUPIED
+        ) {
+            throw new ResourceNotFoundException(
+                SystemLanguage.getMessage("table_not_found")
+            );
         }
 
-        if (table.getTableStatus() == TableStatus.OCCUPIED && newStatus == TableStatus.MAINTENANCE) {
-            throw new ResourceNotFoundException(SystemLanguage.getMessage("table_in_use"));
+        if (
+            table.getTableStatus() == TableStatus.OCCUPIED &&
+            newStatus == TableStatus.MAINTENANCE
+        ) {
+            throw new ResourceNotFoundException(
+                SystemLanguage.getMessage("table_in_use")
+            );
         }
-
 
         table.setTableStatus(newStatus);
         BilliardTable savedTable = billiardTableRepository.save(table);
@@ -312,8 +354,11 @@ public class BilliardTableService {
      * @param tableCode The unique code of the billiard table to mark as deleted.
      */
     private void setTableToDelete(String tableCode) {
-        BilliardTable targetTable = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
-            .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        BilliardTable targetTable = billiardTableRepository
+            .findByTableCodeAndIsDeletedFalse(tableCode)
+            .orElseThrow(() ->
+                new ResourceNotFoundException("Table not found")
+            );
         targetTable.setIsDeleted(true);
         billiardTableRepository.save(targetTable);
     }
