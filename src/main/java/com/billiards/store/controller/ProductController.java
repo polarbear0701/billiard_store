@@ -1,137 +1,187 @@
 package com.billiards.store.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.RestController;
-
+import com.billiards.store.common.base.PagedResponse;
 import com.billiards.store.common.base.SuccessResponse;
 import com.billiards.store.common.util.SystemLanguage;
 import com.billiards.store.dto.product.ProductRequestDto;
 import com.billiards.store.dto.product.ProductResponseDto;
 import com.billiards.store.dto.product.ProductUpdateStockDto;
 import com.billiards.store.service.ProductService;
-
+import java.time.LocalDateTime;
+import java.util.UUID;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/product")
 public class ProductController {
-    private final ProductService productService;
 
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
+	private final ProductService productService;
 
+	public ProductController(ProductService productService) {
+		this.productService = productService;
+	}
 
-    @PostMapping("/create")
-    public ResponseEntity<SuccessResponse<?>> create(@RequestBody ProductRequestDto request) {
-        ProductResponseDto responseDto = productService.create(request);
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.ACCEPTED.value(),
-                SystemLanguage.getMessage("create_success"),
-                responseDto,
-                LocalDateTime.now()
-        ));
-    }
+	@PostMapping("/create")
+	public ResponseEntity<SuccessResponse<?>> create(
+		@RequestBody ProductRequestDto request
+	) {
+		ProductResponseDto responseDto = productService.create(request);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.ACCEPTED.value(),
+				SystemLanguage.getMessage("create_success"),
+				responseDto,
+				LocalDateTime.now()
+			)
+		);
+	}
 
-    @GetMapping("/all")
-    public ResponseEntity<SuccessResponse<?>> findAll() {
-        List<ProductResponseDto> productsDto = productService.findAll();
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                SystemLanguage.getMessage("success"),
-                productsDto,
-                LocalDateTime.now()
-        ));
-    }
+	@GetMapping("/all")
+	public ResponseEntity<SuccessResponse<?>> findAll(
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "20") int size,
+		@RequestParam(defaultValue = "createdAt") String sortBy,
+		@RequestParam(defaultValue = "desc") String direction
+	) {
+		Sort sort = Sort.by(Sort.Direction.fromString(direction), sortBy);
+		Pageable pageable = PageRequest.of(page, size, sort);
+		PagedResponse<ProductResponseDto> productsDto = productService.findAll(
+			pageable
+		);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.OK.value(),
+				SystemLanguage.getMessage("success"),
+				productsDto,
+				LocalDateTime.now()
+			)
+		);
+	}
 
-    @GetMapping("/{id}")
-    public ResponseEntity<SuccessResponse<?>> findById(@PathVariable UUID id) {
-        ProductResponseDto responseDto = productService.findById(id);
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                SystemLanguage.getMessage("success"),
-                responseDto,
-                LocalDateTime.now()
-        ));
-    }
+	@GetMapping("/{id}")
+	public ResponseEntity<SuccessResponse<?>> findById(@PathVariable UUID id) {
+		ProductResponseDto responseDto = productService.findById(id);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.OK.value(),
+				SystemLanguage.getMessage("success"),
+				responseDto,
+				LocalDateTime.now()
+			)
+		);
+	}
 
-    @GetMapping("/product-code/{productCode}")
-    public ResponseEntity<SuccessResponse<?>> findByProductCode(@PathVariable String productCode) {
-        ProductResponseDto productDto = productService.findByProductCode(productCode);
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                SystemLanguage.getMessage("success"),
-                productDto,
-                LocalDateTime.now()
-        ));
-    }
+	@GetMapping("/product-code/{productCode}")
+	public ResponseEntity<SuccessResponse<?>> findByProductCode(
+		@PathVariable String productCode
+	) {
+		ProductResponseDto productDto = productService.findByProductCode(
+			productCode
+		);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.OK.value(),
+				SystemLanguage.getMessage("success"),
+				productDto,
+				LocalDateTime.now()
+			)
+		);
+	}
 
-    @PutMapping("/update/name/{productCode}")
-    public ResponseEntity<SuccessResponse<?>> updateProductName(@PathVariable String productCode, @RequestParam String newProductName) {
-        productService.updateStockName(productCode, newProductName);
-        
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                SystemLanguage.getMessage("update_success"),
-                String.format("Product name has been changed to %s", newProductName),
-                LocalDateTime.now()
-        ));
-    }
+	@PutMapping("/update/name/{productCode}")
+	public ResponseEntity<SuccessResponse<?>> updateProductName(
+		@PathVariable String productCode,
+		@RequestParam String newProductName
+	) {
+		productService.updateStockName(productCode, newProductName);
 
-    @PutMapping("/update/quantity/{productCode}")
-    public ResponseEntity<SuccessResponse<?>> updateProductQuantity(@PathVariable String productCode, @RequestBody ProductUpdateStockDto productUpdateStockDto) {
-        productService.updateStock(productCode, productUpdateStockDto);
-        
-        return ResponseEntity.ok(new SuccessResponse<>(
-            HttpStatus.ACCEPTED.value(), 
-            SystemLanguage.getMessage("update_success"), 
-            null, 
-            LocalDateTime.now()));
-    }
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.OK.value(),
+				SystemLanguage.getMessage("update_success"),
+				String.format(
+					"Product name has been changed to %s",
+					newProductName
+				),
+				LocalDateTime.now()
+			)
+		);
+	}
 
-    @PutMapping("/update/clear/{productCode}")
-    public ResponseEntity<SuccessResponse<?>> clearStockQuantity(@PathVariable String productCode) {
-        productService.clearStock(productCode);
-        return ResponseEntity.ok(new SuccessResponse<>(
-            HttpStatus.ACCEPTED.value(), 
-            SystemLanguage.getMessage("delete_success"), 
-            null, 
-            LocalDateTime.now()));
-    }
+	@PutMapping("/update/quantity/{productCode}")
+	public ResponseEntity<SuccessResponse<?>> updateProductQuantity(
+		@PathVariable String productCode,
+		@RequestBody ProductUpdateStockDto productUpdateStockDto
+	) {
+		productService.updateStock(productCode, productUpdateStockDto);
 
-    @PutMapping("/update/price/{productCode}")
-    public ResponseEntity<SuccessResponse<?>> updateProductPrice(@PathVariable String productCode, @RequestParam("newPrice") int newStockPrice) {
-        productService.updatePrice(productCode, newStockPrice);
-        
-        return ResponseEntity.ok(new SuccessResponse<>(
-            HttpStatus.ACCEPTED.value(), 
-            SystemLanguage.getMessage("update_success"), 
-            null, 
-            LocalDateTime.now()));
-    }
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.ACCEPTED.value(),
+				SystemLanguage.getMessage("update_success"),
+				null,
+				LocalDateTime.now()
+			)
+		);
+	}
 
-    @DeleteMapping("/{productCode}")
-    public ResponseEntity<SuccessResponse<?>> delete(@PathVariable String productCode) {
-        productService.delete(productCode);
-        return ResponseEntity.ok(new SuccessResponse<>(
-                HttpStatus.OK.value(),
-                "Product deleted successfully",
-                null,
-                LocalDateTime.now()
-        ));
-    }
+	@PutMapping("/update/clear/{productCode}")
+	public ResponseEntity<SuccessResponse<?>> clearStockQuantity(
+		@PathVariable String productCode
+	) {
+		productService.clearStock(productCode);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.ACCEPTED.value(),
+				SystemLanguage.getMessage("delete_success"),
+				null,
+				LocalDateTime.now()
+			)
+		);
+	}
+
+	@PutMapping("/update/price/{productCode}")
+	public ResponseEntity<SuccessResponse<?>> updateProductPrice(
+		@PathVariable String productCode,
+		@RequestParam("newPrice") int newStockPrice
+	) {
+		productService.updatePrice(productCode, newStockPrice);
+
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.ACCEPTED.value(),
+				SystemLanguage.getMessage("update_success"),
+				null,
+				LocalDateTime.now()
+			)
+		);
+	}
+
+	@DeleteMapping("/{productCode}")
+	public ResponseEntity<SuccessResponse<?>> delete(
+		@PathVariable String productCode
+	) {
+		productService.delete(productCode);
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.OK.value(),
+				"Product deleted successfully",
+				null,
+				LocalDateTime.now()
+			)
+		);
+	}
 }
-
