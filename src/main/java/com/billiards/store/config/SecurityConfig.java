@@ -1,5 +1,6 @@
 package com.billiards.store.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,18 +24,20 @@ import org.springframework.web.cors.CorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+	@Value("${app.username}")
+	private String username;
+
+	@Value("${app.password}")
+	private String password;
+
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails admin = User.withUsername("admin")
-            .password(passwordEncoder.encode("Test123"))
+        UserDetails admin = User.withUsername(username)
+            .password(passwordEncoder.encode(password))
             .roles("ADMIN")
             .build();
-        
-        UserDetails staff = User.withUsername("staff")
-            .password(passwordEncoder.encode("Test123"))
-            .roles("ADMIN")
-            .build();
-        return new InMemoryUserDetailsManager(admin, staff);
+
+        return new InMemoryUserDetailsManager(admin);
     }
 
     @Bean

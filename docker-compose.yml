@@ -14,6 +14,8 @@ services:
       - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS}
       - JWT_REFRESH_EXPIRATION_MS=${JWT_REFRESH_EXPIRATION_MS}
       - BANK_URL=${BANK_URL}
+      - USER_ACCOUNT=${USER_ACCOUNT}
+      - USER_PASSWORD=${USER_PASSWORD}
     restart: always
   tunnel:
     image: cloudflare/cloudflared:latest
