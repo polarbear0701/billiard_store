@@ -3,7 +3,7 @@ package com.billiards.store.controller;
 import com.billiards.store.common.base.PagedResponse;
 import com.billiards.store.common.base.SuccessResponse;
 import com.billiards.store.common.util.SystemLanguage;
-import com.billiards.store.dto.order_item.OrderItemRequestDto;
+import com.billiards.store.dto.order_item.OrderItemCreateRequestDto;
 import com.billiards.store.dto.order_item.OrderItemResponseDto;
 import com.billiards.store.service.OrderItemService;
 import java.time.LocalDateTime;
@@ -36,9 +36,11 @@ public class OrderItemController {
 
 	@PostMapping("/create")
 	public ResponseEntity<SuccessResponse<?>> create(
-		@RequestBody OrderItemRequestDto request
+		@RequestBody OrderItemCreateRequestDto request
 	) {
-		OrderItemResponseDto responseDto = orderItemService.create(request);
+		List<OrderItemResponseDto> responseDto = orderItemService.create(
+			request
+		);
 		return ResponseEntity.ok(
 			new SuccessResponse<>(
 				HttpStatus.ACCEPTED.value(),

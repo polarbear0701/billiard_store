@@ -5,6 +5,8 @@ import com.billiards.store.common.enumerated.SessionStatus;
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.common.util.SystemLanguage;
+import com.billiards.store.dto.order_item.OrderItemCreateRequestDto;
+import com.billiards.store.dto.order_item.OrderItemLineDto;
 import com.billiards.store.dto.order_item.OrderItemRequestDto;
 import com.billiards.store.dto.order_item.OrderItemResponseDto;
 import com.billiards.store.dto.product.ProductResponseDto;
@@ -13,6 +15,7 @@ import com.billiards.store.model.OrderItem;
 import com.billiards.store.repository.OrderItemRepository;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,58 +43,50 @@ public class OrderItemService {
 	}
 
 	/**
-	 * Creates a new order item for the specified session and product.
+	 * Creates order items for several products in the specified session at once.
 	 * <p>
-	 * This method validates the request data, retrieves the product information,
-	 * checks if the play session exists, generates an order item code, updates
-	 * the product stock, saves the order item to the database, and returns it as a response DTO.
+	 * Validates the request, checks that the play session exists, then for each line retrieves the
+	 * product, generates an order item code, deducts the product stock and saves the order item.
+	 * The whole operation is transactional: if any line fails, no order item is created and no stock is changed.
 	 * </p>
 	 *
-	 * @param requestDto The request data containing session code, product code, quantity, etc.
-	 * @return An OrderItemResponseDto representing the newly created order item with all its details.
+	 * @param requestDto The request data containing the session code and the list of product lines (product code, quantity).
+	 * @return A list of OrderItemResponseDto representing the newly created order items, in request order.
 	 */
 	@Transactional
-	public OrderItemResponseDto create(OrderItemRequestDto requestDto) {
-		validateRequestDto(requestDto);
-
-		ProductResponseDto productResponseDto =
-			productService.findByProductCode(requestDto.getProductCode());
+	public List<OrderItemResponseDto> create(
+		OrderItemCreateRequestDto requestDto
+	) {
+		validateCreateRequestDto(requestDto);
 
 		playSessionService.findBySessionCode(requestDto.getSessionCode());
 
-		/**
-		 * Validates that the play session exists for the given session code.
-		 * <p>
-		 * Throws ResourceNotFoundException if the play session is not found or already deleted.
-		 * </p>
-		 */
-		OrderItem orderItem = new OrderItem();
-		orderItem.setOrderItemCode(
-			codeGeneratorUtil.generateCode("ORI", "order_item_code_seq")
-		);
+		List<OrderItemResponseDto> responses = new ArrayList<>();
+		for (OrderItemLineDto line : requestDto.getItems()) {
+			ProductResponseDto productResponseDto =
+				productService.findByProductCode(line.getProductCode());
 
-		orderItem.setSessionCode(requestDto.getSessionCode());
-		orderItem.setProductCode(requestDto.getProductCode());
-		orderItem.setQuantity(requestDto.getQuantity());
+			OrderItem orderItem = new OrderItem();
+			orderItem.setOrderItemCode(
+				codeGeneratorUtil.generateCode("ORI", "order_item_code_seq")
+			);
+			orderItem.setSessionCode(requestDto.getSessionCode());
+			orderItem.setProductCode(line.getProductCode());
+			orderItem.setQuantity(line.getQuantity());
+			orderItem.setPrice(productResponseDto.getPrice());
 
-		orderItem.setPrice(productResponseDto.getPrice());
-		ProductUpdateStockDto productUpdateStockDto = new ProductUpdateStockDto(
-			true,
-			requestDto.getQuantity()
-		);
+			productService.updateStock(
+				line.getProductCode(),
+				new ProductUpdateStockDto(true, line.getQuantity())
+			);
 
-		productService.updateStock(
-			requestDto.getProductCode(),
-			productUpdateStockDto
-		);
-
-		OrderItem savedOrderItem = orderItemRepository.save(orderItem);
-		OrderItemResponseDto orderItemResponseDto = convertToResponseDto(
-			savedOrderItem
-		);
-		orderItemResponseDto.setProductName(productResponseDto.getName());
-
-		return orderItemResponseDto;
+			OrderItemResponseDto responseDto = convertToResponseDto(
+				orderItemRepository.save(orderItem)
+			);
+			responseDto.setProductName(productResponseDto.getName());
+			responses.add(responseDto);
+		}
+		return responses;
 	}
 
 	/**
@@ -403,6 +398,47 @@ public class OrderItemService {
 		);
 		orderItem.setIsDeleted(true);
 		orderItemRepository.save(orderItem);
+	}
+
+	/**
+	 * Validates the create request: session code must be present, the item list must be non-empty,
+	 * and every line needs a product code and a positive quantity.
+	 * Throws ResourceNotFoundException for invalid inputs.
+	 *
+	 * @param requestDto The create request to validate.
+	 */
+	private void validateCreateRequestDto(
+		OrderItemCreateRequestDto requestDto
+	) {
+		if (
+			requestDto.getSessionCode() == null ||
+			requestDto.getSessionCode().trim().isEmpty()
+		) {
+			throw new ResourceNotFoundException(
+				SystemLanguage.getMessage("session_code_empty")
+			);
+		}
+		if (requestDto.getItems() == null || requestDto.getItems().isEmpty()) {
+			throw new ResourceNotFoundException(
+				SystemLanguage.getMessage("product_code_empty")
+			);
+		}
+		for (OrderItemLineDto line : requestDto.getItems()) {
+			if (
+				line == null ||
+				line.getProductCode() == null ||
+				line.getProductCode().trim().isEmpty()
+			) {
+				throw new ResourceNotFoundException(
+					SystemLanguage.getMessage("product_code_empty")
+				);
+			}
+			if (line.getQuantity() <= 0) {
+				throw new ResourceNotFoundException(
+					SystemLanguage.getMessage("invalid_quantity")
+				);
+			}
+		}
 	}
 
 	/**
