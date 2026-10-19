@@ -15,20 +15,12 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import com.billiards.store.common.enumerated.SessionStatus;
 import com.billiards.store.common.enumerated.TableStatus;
@@ -52,38 +44,12 @@ import com.billiards.store.service.OrderItemService;
 import com.billiards.store.service.PlaySessionService;
 import com.billiards.store.service.ProductService;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 
 /**
- * End-to-end check of the audit feature against a real PostgreSQL instance
- * (so Flyway migrations and the JSONB mapping are exercised too).
+ * End-to-end check of the audit feature (see {@link AbstractIntegrationTest}).
  */
-@Testcontainers
-@SpringBootTest(properties = {
-    "SERVER_PORT=0",
-    "JWT_SECRET=dGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQtdGVzdC1zZWNyZXQtMTIzNDU2Nzg5MA==",
-    "JWT_EXPIRATION_MS=3600000",
-    "JWT_REFRESH_EXPIRATION_MS=86400000",
-    "BANK_URL=http://bank.test/?",
-    "USER_ACCOUNT=admin",
-    "USER_PASSWORD=admin-pass"
-})
-@AutoConfigureMockMvc
-class AuditLogIntegrationTest {
+class AuditLogIntegrationTest extends AbstractIntegrationTest {
 
-    @Container
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:15-alpine");
-
-    @DynamicPropertySource
-    static void database(DynamicPropertyRegistry registry) {
-        registry.add("DB_URL", postgres::getJdbcUrl);
-        registry.add("DB_USERNAME", postgres::getUsername);
-        registry.add("DB_PASSWORD", postgres::getPassword);
-    }
-
-    @Autowired MockMvc mockMvc;
-    @Autowired ObjectMapper objectMapper;
     @Autowired AuditLogRepository auditLogRepository;
     @Autowired JdbcTemplate jdbcTemplate;
     @Autowired ProductService productService;
@@ -101,19 +67,6 @@ class AuditLogIntegrationTest {
         SecurityContextHolder.getContext().setAuthentication(
             new UsernamePasswordAuthenticationToken(
                 "admin", null, List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))));
-    }
-
-    private String loginToken() throws Exception {
-        MvcResult result = mockMvc.perform(post("/auth/login")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"admin\",\"password\":\"admin-pass\"}"))
-            .andExpect(status().isOk())
-            .andReturn();
-        return json(result).at("/data/accessToken").asString();
-    }
-
-    private JsonNode json(MvcResult result) throws Exception {
-        return objectMapper.readTree(result.getResponse().getContentAsString());
     }
 
     private List<AuditLog> logsFor(String entityType, String entityCode) {
@@ -137,7 +90,7 @@ class AuditLogIntegrationTest {
 
     @Test
     void productLifecycleIsAuditedThroughTheApi() throws Exception {
-        String token = loginToken();
+        String token = adminToken();
 
         MvcResult created = mockMvc.perform(post("/product/create")
                 .header("Authorization", "Bearer " + token)
@@ -171,7 +124,7 @@ class AuditLogIntegrationTest {
     void searchFiltersAndPageSizeCapAreApplied() throws Exception {
         actAsAdmin();
         ProductResponseDto product = productService.create(new ProductRequestDto("Tea", 5, BigDecimal.valueOf(8000)));
-        String token = loginToken();
+        String token = adminToken();
         SecurityContextHolder.clearContext();
 
         mockMvc.perform(get("/audit-logs")

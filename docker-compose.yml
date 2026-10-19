@@ -16,6 +16,7 @@ services:
       - BANK_URL=${BANK_URL}
       - USER_ACCOUNT=${USER_ACCOUNT}
       - USER_PASSWORD=${USER_PASSWORD}
+      - APP_ACCOUNTS=${APP_ACCOUNTS:-}
     restart: always
   tunnel:
     image: cloudflare/cloudflared:latest
