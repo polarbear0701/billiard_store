@@ -10,6 +10,8 @@ import com.billiards.store.model.Invoice;
 import com.billiards.store.repository.InvoiceRepository;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -27,6 +29,7 @@ public class InvoiceService {
 	private final PlaySessionService playSessionService;
 	private final OrderItemService orderItemService;
 	private final AuditService auditService;
+	private final Clock clock;
 	private final String BANK_URL;
 
 	public InvoiceService(
@@ -35,6 +38,7 @@ public class InvoiceService {
 		PlaySessionService playSessionService,
 		OrderItemService orderItemService,
 		AuditService auditService,
+		Clock clock,
 		@Value("${app.bankUrl}") String BANK_URL
 	) {
 		this.invoiceRepository = invoiceRepository;
@@ -42,6 +46,7 @@ public class InvoiceService {
 		this.playSessionService = playSessionService;
 		this.orderItemService = orderItemService;
 		this.auditService = auditService;
+		this.clock = clock;
 		this.BANK_URL = BANK_URL;
 	}
 
@@ -218,7 +223,8 @@ public class InvoiceService {
 	/**
 	 * Marks an invoice as complete.
 	 * <p>
-	 * Retrieves the invoice by its code, sets the complete flag to true, and saves it to the database.
+	 * Retrieves the invoice by its code, sets the complete flag to true, records the payment time
+	 * (only the first time), and saves it to the database.
 	 * Throws ResourceNotFoundException if not found or already deleted.
 	 * </p>
 	 *
@@ -234,6 +240,9 @@ public class InvoiceService {
 				)
 			);
 		InvoiceResponseDto before = convertToResponseDto(invoice);
+		if (!invoice.isComplete()) {
+			invoice.setPaidAt(LocalDateTime.now(clock));
+		}
 		invoice.setComplete(true);
 		invoiceRepository.save(invoice);
 		auditService.record(
@@ -286,6 +295,7 @@ public class InvoiceService {
 		dto.setFnbFee(invoice.getFnbFee());
 		dto.setTotalAmount(invoice.getTotalAmount());
 		dto.setComplete(invoice.isComplete());
+		dto.setPaidAt(invoice.getPaidAt());
 		dto.setCreatedAt(invoice.getCreatedAt());
 		dto.setUpdatedAt(invoice.getUpdatedAt());
 		dto.setCreatedBy(invoice.getCreatedBy());

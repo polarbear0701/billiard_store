@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.billiards.store.common.base.ErrorResponse;
+import com.billiards.store.common.exception.BadRequestException;
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.SystemLanguage;
 
@@ -26,6 +27,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
         HttpStatus responseStatus = HttpStatus.NOT_FOUND;
+        ErrorResponse error = new ErrorResponse(responseStatus.value(), ex.getMessage(), LocalDateTime.now());
+        return new ResponseEntity<>(error, responseStatus);
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(BadRequestException ex) {
+        HttpStatus responseStatus = HttpStatus.BAD_REQUEST;
         ErrorResponse error = new ErrorResponse(responseStatus.value(), ex.getMessage(), LocalDateTime.now());
         return new ResponseEntity<>(error, responseStatus);
     }

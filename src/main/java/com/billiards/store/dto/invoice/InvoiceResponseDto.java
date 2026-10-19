@@ -19,6 +19,7 @@ public class InvoiceResponseDto {
     private BigDecimal fnbFee;
     private BigDecimal totalAmount;
     private boolean complete;
+    private LocalDateTime paidAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String createdBy;

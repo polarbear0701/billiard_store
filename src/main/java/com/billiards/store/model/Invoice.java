@@ -1,6 +1,7 @@
 package com.billiards.store.model;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import com.billiards.store.common.base.BaseEntity;
 
@@ -31,4 +32,6 @@ public class Invoice extends BaseEntity {
     private BigDecimal totalAmount;
 
     private boolean complete;
+
+    private LocalDateTime paidAt;
 }
