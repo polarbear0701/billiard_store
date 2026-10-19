@@ -26,8 +26,19 @@ import com.billiards.store.dto.auth.RefreshTokenRequestDto;
 import com.billiards.store.dto.auth.TokenResponseDto;
 import com.billiards.store.dto.auth.ValidateTokenResponseDto;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/auth")
+@SecurityRequirements
+@Tag(
+    name = "Auth",
+    description = "Login and token refresh. These are the only endpoints that do not need a bearer token."
+)
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     
@@ -45,8 +56,19 @@ public class AuthController {
         this.userDetailsService = userDetailsService;
     }
 
+    @Operation(
+        operationId = "auth_login",
+        summary = "Log in",
+        description = "Exchanges a username and password for an access token and a refresh token. "
+            + "Send the access token as `Authorization: Bearer <accessToken>` on every other request. "
+            + "Accounts are configured on the server (there is no sign-up). Access: public."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Logged in; `data` holds the tokens"),
+        @ApiResponse(responseCode = "401", description = "Wrong username or password. Body is a SuccessResponse with `code` 401 and `data` null")
+    })
     @PostMapping("/login")
-    public ResponseEntity<SuccessResponse<?>> login(@RequestBody LoginRequestDto loginRequest) {
+    public ResponseEntity<SuccessResponse<TokenResponseDto>> login(@RequestBody LoginRequestDto loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -96,8 +118,18 @@ public class AuthController {
         }
     }
 
+    @Operation(
+        operationId = "auth_refresh",
+        summary = "Get a new access token",
+        description = "Exchanges a valid refresh token for a new access token and a new refresh token. "
+            + "Call it when the access token has expired (HTTP 401 on a normal request) or shortly before `expiresIn` runs out. Access: public."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "New tokens in `data`"),
+        @ApiResponse(responseCode = "401", description = "Refresh token missing, invalid or expired: log in again. Body is a SuccessResponse with `code` 401 and `data` null")
+    })
     @PostMapping("/refresh")
-    public ResponseEntity<SuccessResponse<?>> refreshToken(
+    public ResponseEntity<SuccessResponse<TokenResponseDto>> refreshToken(
         @RequestBody RefreshTokenRequestDto request
     ) {
         String refreshToken = request.getRefreshToken();
@@ -151,8 +183,14 @@ public class AuthController {
         }
     }
 
+    @Operation(
+        operationId = "auth_validate",
+        summary = "Check a refresh token",
+        description = "Tells whether a refresh token is still usable, for example to decide at app start whether the user must log in again. "
+            + "The request body is the raw refresh token string (not a JSON object). Always returns HTTP 200; read `data.valid`. Access: public."
+    )
     @PostMapping("/validate")
-    public ResponseEntity<SuccessResponse<?>> validateRefreshToken(
+    public ResponseEntity<SuccessResponse<ValidateTokenResponseDto>> validateRefreshToken(
         @RequestBody String refreshToken
     ) {
         if (!jwtUtils.validateJwtToken(refreshToken, "REFRESH")) {
