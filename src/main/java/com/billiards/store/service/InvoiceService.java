@@ -20,10 +20,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class InvoiceService {
 
+	private static final String AUDIT_ENTITY = "Invoice";
+
 	private final InvoiceRepository invoiceRepository;
 	private final CodeGeneratorUtil codeGeneratorUtil;
 	private final PlaySessionService playSessionService;
 	private final OrderItemService orderItemService;
+	private final AuditService auditService;
 	private final String BANK_URL;
 
 	public InvoiceService(
@@ -31,12 +34,14 @@ public class InvoiceService {
 		CodeGeneratorUtil codeGeneratorUtil,
 		PlaySessionService playSessionService,
 		OrderItemService orderItemService,
+		AuditService auditService,
 		@Value("${app.bankUrl}") String BANK_URL
 	) {
 		this.invoiceRepository = invoiceRepository;
 		this.codeGeneratorUtil = codeGeneratorUtil;
 		this.playSessionService = playSessionService;
 		this.orderItemService = orderItemService;
+		this.auditService = auditService;
 		this.BANK_URL = BANK_URL;
 	}
 
@@ -85,7 +90,15 @@ public class InvoiceService {
 		invoice.setTotalAmount(tableFee.add(fnbFee));
 
 		Invoice savedInvoice = invoiceRepository.save(invoice);
-		return convertToResponseDto(savedInvoice);
+		InvoiceResponseDto result = convertToResponseDto(savedInvoice);
+		auditService.record(
+			"CREATE",
+			AUDIT_ENTITY,
+			savedInvoice.getInvoiceCode(),
+			null,
+			result
+		);
+		return result;
 	}
 
 	/**
@@ -211,6 +224,7 @@ public class InvoiceService {
 	 *
 	 * @param invoiceCode The unique code of the invoice to mark as complete.
 	 */
+	@Transactional
 	public void completeInvoice(String invoiceCode) {
 		Invoice invoice = invoiceRepository
 			.findByInvoiceCodeAndIsDeletedFalse(invoiceCode)
@@ -219,8 +233,16 @@ public class InvoiceService {
 					SystemLanguage.getMessage("invoice_not_found")
 				)
 			);
+		InvoiceResponseDto before = convertToResponseDto(invoice);
 		invoice.setComplete(true);
 		invoiceRepository.save(invoice);
+		auditService.record(
+			"COMPLETE",
+			AUDIT_ENTITY,
+			invoiceCode,
+			before,
+			convertToResponseDto(invoice)
+		);
 	}
 
 	/**
@@ -232,6 +254,7 @@ public class InvoiceService {
 	 *
 	 * @param invoiceCode The unique code of the invoice to delete.
 	 */
+	@Transactional
 	public void delete(String invoiceCode) {
 		Invoice invoice = invoiceRepository
 			.findByInvoiceCodeAndIsDeletedFalse(invoiceCode)
@@ -240,8 +263,10 @@ public class InvoiceService {
 					SystemLanguage.getMessage("invoice_not_found")
 				)
 			);
+		InvoiceResponseDto before = convertToResponseDto(invoice);
 		invoice.setIsDeleted(true);
 		invoiceRepository.save(invoice);
+		auditService.record("DELETE", AUDIT_ENTITY, invoiceCode, before, null);
 	}
 
 	/**

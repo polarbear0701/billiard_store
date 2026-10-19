@@ -30,6 +30,9 @@ public class PlaySessionService {
 	private final PlaySessionRepository playSessionRepository;
 	private final CodeGeneratorUtil codeGeneratorUtil;
 	private final BilliardTableService billiardTableService;
+	private final AuditService auditService;
+
+	private static final String AUDIT_ENTITY = "PlaySession";
 
 	private static final Logger logger = LoggerFactory.getLogger(
 		PlaySession.class
@@ -41,15 +44,18 @@ public class PlaySessionService {
 	 * @param playSessionRepository repository for play session persistence
 	 * @param codeGeneratorUtil utility for generating session codes
 	 * @param billiardTableService service for table validation and status updates
+	 * @param auditService service for recording audit log entries
 	 */
 	public PlaySessionService(
 		PlaySessionRepository playSessionRepository,
 		CodeGeneratorUtil codeGeneratorUtil,
-		BilliardTableService billiardTableService
+		BilliardTableService billiardTableService,
+		AuditService auditService
 	) {
 		this.playSessionRepository = playSessionRepository;
 		this.codeGeneratorUtil = codeGeneratorUtil;
 		this.billiardTableService = billiardTableService;
+		this.auditService = auditService;
 	}
 
 	/**
@@ -78,7 +84,15 @@ public class PlaySessionService {
 		session.setStartTime(LocalDateTime.now());
 
 		PlaySession savedSession = playSessionRepository.save(session);
-		return convertToResponseDto(savedSession);
+		PlaySessionResponseDto result = convertToResponseDto(savedSession);
+		auditService.record(
+			"CREATE",
+			AUDIT_ENTITY,
+			savedSession.getSessionCode(),
+			null,
+			result
+		);
+		return result;
 	}
 
 	/**
@@ -88,6 +102,7 @@ public class PlaySessionService {
 	 * @param newStartTimeRequestDto payload containing new start time
 	 * @return updated play session response
 	 */
+	@Transactional
 	public PlaySessionResponseDto adjustStartTime(
 		String playSessionCode,
 		AdjustStartTimeRequestDto newStartTimeRequestDto
@@ -113,9 +128,18 @@ public class PlaySessionService {
 			);
 		}
 
+		PlaySessionResponseDto before = convertToResponseDto(playSession);
 		playSession.setStartTime(newStartTimeRequestDto.getStartTime());
 		PlaySession savedSession = playSessionRepository.save(playSession);
-		return convertToResponseDto(savedSession);
+		PlaySessionResponseDto result = convertToResponseDto(savedSession);
+		auditService.record(
+			"ADJUST_START_TIME",
+			AUDIT_ENTITY,
+			playSessionCode,
+			before,
+			result
+		);
+		return result;
 	}
 
 	/**
@@ -123,6 +147,7 @@ public class PlaySessionService {
 	 *
 	 * @param playSessionCode session code to close
 	 */
+	@Transactional
 	public void endPlaySession(String playSessionCode) {
 		PlaySession playSession = playSessionRepository
 			.findBySessionCodeAndIsDeletedFalse(playSessionCode)
@@ -142,6 +167,7 @@ public class PlaySessionService {
 			);
 		}
 
+		PlaySessionResponseDto before = convertToResponseDto(playSession);
 		playSession.setEndTime(LocalDateTime.now());
 		playSession.setSessionStatus(SessionStatus.COMPLETED);
 		billiardTableService.setStatusTable(
@@ -149,6 +175,13 @@ public class PlaySessionService {
 			TableStatus.AVAILABLE
 		);
 		playSessionRepository.save(playSession);
+		auditService.record(
+			"END",
+			AUDIT_ENTITY,
+			playSessionCode,
+			before,
+			convertToResponseDto(playSession)
+		);
 	}
 
 	/**
@@ -307,6 +340,7 @@ public class PlaySessionService {
 	 * @param requestDto payload containing values to update
 	 * @return updated play session response
 	 */
+	@Transactional
 	public PlaySessionResponseDto update(
 		UUID id,
 		PlaySessionRequestDto requestDto
@@ -317,11 +351,20 @@ public class PlaySessionService {
 				new ResourceNotFoundException("Play session not found")
 			);
 
+		PlaySessionResponseDto before = convertToResponseDto(session);
 		session.setTableCode(requestDto.getTableCode());
 		session.setSessionStatus(requestDto.getSessionStatus());
 
 		PlaySession updatedSession = playSessionRepository.save(session);
-		return convertToResponseDto(updatedSession);
+		PlaySessionResponseDto result = convertToResponseDto(updatedSession);
+		auditService.record(
+			"UPDATE",
+			AUDIT_ENTITY,
+			session.getSessionCode(),
+			before,
+			result
+		);
+		return result;
 	}
 
 	/**
@@ -329,14 +372,23 @@ public class PlaySessionService {
 	 *
 	 * @param id session id
 	 */
+	@Transactional
 	public void delete(UUID id) {
 		PlaySession session = playSessionRepository
 			.findByIdAndIsDeletedFalse(id)
 			.orElseThrow(() ->
 				new ResourceNotFoundException("Play session not found")
 			);
+		PlaySessionResponseDto before = convertToResponseDto(session);
 		session.setIsDeleted(true);
 		playSessionRepository.save(session);
+		auditService.record(
+			"DELETE",
+			AUDIT_ENTITY,
+			session.getSessionCode(),
+			before,
+			null
+		);
 	}
 
 	/**

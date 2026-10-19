@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 /**
@@ -24,15 +25,20 @@ import org.springframework.stereotype.Service;
  */
 public class ProductService {
 
+	private static final String AUDIT_ENTITY = "Product";
+
 	private final ProductRepository productRepository;
 	private final CodeGeneratorUtil codeGeneratorUtil;
+	private final AuditService auditService;
 
 	public ProductService(
 		ProductRepository productRepository,
-		CodeGeneratorUtil codeGeneratorUtil
+		CodeGeneratorUtil codeGeneratorUtil,
+		AuditService auditService
 	) {
 		this.productRepository = productRepository;
 		this.codeGeneratorUtil = codeGeneratorUtil;
+		this.auditService = auditService;
 	}
 
 	/**
@@ -42,6 +48,7 @@ public class ProductService {
 	 * @param requestDto The product request DTO containing name, quantity, and price
 	 * @return The created product as a response DTO
 	 */
+	@Transactional
 	public ProductResponseDto create(ProductRequestDto requestDto) {
 		Product product = new Product();
 		product.setProductCode(
@@ -52,7 +59,15 @@ public class ProductService {
 		product.setPrice(requestDto.getPrice());
 
 		Product savedProduct = productRepository.save(product);
-		return convertToResponseDto(savedProduct);
+		ProductResponseDto result = convertToResponseDto(savedProduct);
+		auditService.record(
+			"CREATE",
+			AUDIT_ENTITY,
+			savedProduct.getProductCode(),
+			null,
+			result
+		);
+		return result;
 	}
 
 	/**
@@ -146,6 +161,7 @@ public class ProductService {
 	 * @return The updated product as a response DTO
 	 * @throws ResourceNotFoundException if the product is not found
 	 */
+	@Transactional
 	public ProductResponseDto update(
 		String productCode,
 		ProductRequestDto requestDto
@@ -158,12 +174,22 @@ public class ProductService {
 				)
 			);
 
+		ProductResponseDto before = convertToResponseDto(product);
+
 		product.setName(requestDto.getName());
 		product.setQuantity(requestDto.getQuantity());
 		product.setPrice(requestDto.getPrice());
 
 		Product updatedProduct = productRepository.save(product);
-		return convertToResponseDto(updatedProduct);
+		ProductResponseDto result = convertToResponseDto(updatedProduct);
+		auditService.record(
+			"UPDATE",
+			AUDIT_ENTITY,
+			productCode,
+			before,
+			result
+		);
+		return result;
 	}
 
 	/**
@@ -175,6 +201,7 @@ public class ProductService {
 	 * @param productUpdateStockDto Contains the amount to update and whether it's a decrement or increment
 	 * @throws ResourceNotFoundException if the product is not found or insufficient stock for decrement
 	 */
+	@Transactional
 	public void updateStock(
 		String productCode,
 		ProductUpdateStockDto productUpdateStockDto
@@ -186,6 +213,7 @@ public class ProductService {
 					SystemLanguage.getMessage("product_not_found")
 				)
 			);
+		ProductResponseDto before = convertToResponseDto(product);
 		if (productUpdateStockDto.isDecrement()) {
 			if (
 				product.getQuantity() <
@@ -208,6 +236,13 @@ public class ProductService {
 		}
 
 		productRepository.save(product);
+		auditService.record(
+			"UPDATE_STOCK",
+			AUDIT_ENTITY,
+			productCode,
+			before,
+			convertToResponseDto(product)
+		);
 	}
 
 	/**
@@ -216,6 +251,7 @@ public class ProductService {
 	 * @param productCode The product code of the product
 	 * @param newProductName The new name for the product
 	 */
+	@Transactional
 	public void updateStockName(String productCode, String newProductName) {
 		Product product = productRepository
 			.findByProductCodeAndIsDeletedFalse(productCode)
@@ -224,8 +260,16 @@ public class ProductService {
 					SystemLanguage.getMessage("product_not_found")
 				)
 			);
+		ProductResponseDto before = convertToResponseDto(product);
 		product.setName(newProductName);
 		productRepository.save(product);
+		auditService.record(
+			"UPDATE_NAME",
+			AUDIT_ENTITY,
+			productCode,
+			before,
+			convertToResponseDto(product)
+		);
 	}
 
 	/**
@@ -234,14 +278,23 @@ public class ProductService {
 	 * @param productCode The product code of the product
 	 * @throws ResourceNotFoundException if the product is not found
 	 */
+	@Transactional
 	public void clearStock(String productCode) {
 		Product product = productRepository
 			.findByProductCodeAndIsDeletedFalse(productCode)
 			.orElseThrow(() ->
 				new ResourceNotFoundException("Product not found")
 			);
+		ProductResponseDto before = convertToResponseDto(product);
 		product.setQuantity(0);
 		productRepository.save(product);
+		auditService.record(
+			"CLEAR_STOCK",
+			AUDIT_ENTITY,
+			productCode,
+			before,
+			convertToResponseDto(product)
+		);
 	}
 
 	/**
@@ -252,6 +305,7 @@ public class ProductService {
 	 * @param newStockPrice The new price to set
 	 * @throws ResourceNotFoundException if the product is not found or price is invalid (<= 1000)
 	 */
+	@Transactional
 	public void updatePrice(String productCode, int newStockPrice) {
 		Product product = productRepository
 			.findByProductCodeAndIsDeletedFalse(productCode)
@@ -262,8 +316,16 @@ public class ProductService {
 			throw new ResourceNotFoundException("Stock price is invalid");
 		}
 
+		ProductResponseDto before = convertToResponseDto(product);
 		product.setPrice(BigDecimal.valueOf(newStockPrice));
 		productRepository.save(product);
+		auditService.record(
+			"UPDATE_PRICE",
+			AUDIT_ENTITY,
+			productCode,
+			before,
+			convertToResponseDto(product)
+		);
 	}
 
 	/**
@@ -272,14 +334,17 @@ public class ProductService {
 	 * @param productCode The product code of the product to delete
 	 * @throws ResourceNotFoundException if the product is not found
 	 */
+	@Transactional
 	public void delete(String productCode) {
 		Product product = productRepository
 			.findByProductCodeAndIsDeletedFalse(productCode)
 			.orElseThrow(() ->
 				new ResourceNotFoundException("Product not found")
 			);
+		ProductResponseDto before = convertToResponseDto(product);
 		product.setIsDeleted(true);
 		productRepository.save(product);
+		auditService.record("DELETE", AUDIT_ENTITY, productCode, before, null);
 	}
 
 	private ProductResponseDto convertToResponseDto(Product product) {

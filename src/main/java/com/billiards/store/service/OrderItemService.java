@@ -29,17 +29,22 @@ public class OrderItemService {
 	private final CodeGeneratorUtil codeGeneratorUtil;
 	private final PlaySessionService playSessionService;
 	private final ProductService productService;
+	private final AuditService auditService;
+
+	private static final String AUDIT_ENTITY = "OrderItem";
 
 	public OrderItemService(
 		OrderItemRepository orderItemRepository,
 		CodeGeneratorUtil codeGeneratorUtil,
 		PlaySessionService playSessionService,
-		ProductService productService
+		ProductService productService,
+		AuditService auditService
 	) {
 		this.orderItemRepository = orderItemRepository;
 		this.codeGeneratorUtil = codeGeneratorUtil;
 		this.playSessionService = playSessionService;
 		this.productService = productService;
+		this.auditService = auditService;
 	}
 
 	/**
@@ -84,6 +89,13 @@ public class OrderItemService {
 				orderItemRepository.save(orderItem)
 			);
 			responseDto.setProductName(productResponseDto.getName());
+			auditService.record(
+				"CREATE",
+				AUDIT_ENTITY,
+				orderItem.getOrderItemCode(),
+				null,
+				responseDto
+			);
 			responses.add(responseDto);
 		}
 		return responses;
@@ -243,8 +255,16 @@ public class OrderItemService {
 				order.getProductCode(),
 				productUpdateStockDto
 			);
+			OrderItemResponseDto before = convertToResponseDto(order);
 			order.setIsDeleted(true);
 			orderItemRepository.save(order);
+			auditService.record(
+				"CANCEL",
+				AUDIT_ENTITY,
+				orderItemCode,
+				before,
+				null
+			);
 		} else {
 			throw new ResourceNotFoundException(
 				SystemLanguage.getMessage("session_completed")
@@ -307,8 +327,16 @@ public class OrderItemService {
 					productUpdateStockDto
 				);
 			}
+			OrderItemResponseDto before = convertToResponseDto(order);
 			order.setQuantity(newQuantity);
 			orderItemRepository.save(order);
+			auditService.record(
+				"UPDATE_QUANTITY",
+				AUDIT_ENTITY,
+				orderItemCode,
+				before,
+				convertToResponseDto(order)
+			);
 		} else {
 			throw new ResourceNotFoundException(
 				SystemLanguage.getMessage("session_completed")
@@ -340,6 +368,7 @@ public class OrderItemService {
 				)
 			);
 
+		OrderItemResponseDto before = convertToResponseDto(orderItem);
 		orderItem.setSessionCode(requestDto.getSessionCode());
 		orderItem.setProductCode(requestDto.getProductCode());
 		orderItem.setQuantity(requestDto.getQuantity());
@@ -349,7 +378,15 @@ public class OrderItemService {
 		);
 
 		OrderItem updatedOrderItem = orderItemRepository.save(orderItem);
-		return convertToResponseDto(updatedOrderItem);
+		OrderItemResponseDto result = convertToResponseDto(updatedOrderItem);
+		auditService.record(
+			"UPDATE",
+			AUDIT_ENTITY,
+			orderItem.getOrderItemCode(),
+			before,
+			result
+		);
+		return result;
 	}
 
 	/**
@@ -380,6 +417,7 @@ public class OrderItemService {
 	 *
 	 * @param id The UUID of the order item to delete.
 	 */
+	@Transactional
 	public void delete(UUID id) {
 		OrderItem orderItem = orderItemRepository
 			.findByIdAndIsDeletedFalse(id)
@@ -396,8 +434,16 @@ public class OrderItemService {
 			orderItem.getProductCode(),
 			productUpdateStockDto
 		);
+		OrderItemResponseDto before = convertToResponseDto(orderItem);
 		orderItem.setIsDeleted(true);
 		orderItemRepository.save(orderItem);
+		auditService.record(
+			"DELETE",
+			AUDIT_ENTITY,
+			orderItem.getOrderItemCode(),
+			before,
+			null
+		);
 	}
 
 	/**

@@ -30,6 +30,9 @@ public class BilliardTableService {
 
     private final BilliardTableRepository billiardTableRepository;
     private final CodeGeneratorUtil codeGeneratorUtil;
+    private final AuditService auditService;
+
+    private static final String AUDIT_ENTITY = "BilliardTable";
 
     /**
      * Constructor for the BilliardTableService.
@@ -39,13 +42,16 @@ public class BilliardTableService {
      *
      * @param billiardTableRepository The repository layer for database operations.
      * @param codeGeneratorUtil Utility for generating unique table codes.
+     * @param auditService Service for recording audit log entries.
      */
     public BilliardTableService(
         BilliardTableRepository billiardTableRepository,
-        CodeGeneratorUtil codeGeneratorUtil
+        CodeGeneratorUtil codeGeneratorUtil,
+        AuditService auditService
     ) {
         this.billiardTableRepository = billiardTableRepository;
         this.codeGeneratorUtil = codeGeneratorUtil;
+        this.auditService = auditService;
     }
 
     /**
@@ -62,6 +68,7 @@ public class BilliardTableService {
      *         table, including its auto-generated code, timestamps, and metadata.
      * @throws ResourceNotFoundException if the provided price is not positive or other validation fails.
      */
+    @Transactional
     public BilliardTableResponseDto create(BilliardTableRequestDto requestDto) {
         BilliardTable table = new BilliardTable();
         table.setTableCode(
@@ -76,7 +83,9 @@ public class BilliardTableService {
         table.setPricePerHour(requestDto.getPricePerHour());
 
         BilliardTable savedTable = billiardTableRepository.save(table);
-        return convertToResponseDto(savedTable);
+        BilliardTableResponseDto result = convertToResponseDto(savedTable);
+        auditService.record("CREATE", AUDIT_ENTITY, savedTable.getTableCode(), null, result);
+        return result;
     }
 
     /**
@@ -196,16 +205,20 @@ public class BilliardTableService {
      * @return A {@code BilliardTableResponseDto} reflecting the updated table state.
      * @throws ResourceNotFoundException if no non-deleted table exists with the provided ID.
      */
+    @Transactional
     public BilliardTableResponseDto update(UUID id, BilliardTableRequestDto requestDto) {
         BilliardTable table = billiardTableRepository.findByIdAndIsDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found")));
 
+        BilliardTableResponseDto before = convertToResponseDto(table);
         table.setTableType(requestDto.getTableType());
         table.setTableStatus(requestDto.getTableStatus());
         table.setPricePerHour(requestDto.getPricePerHour());
 
         BilliardTable updatedTable = billiardTableRepository.save(table);
-        return convertToResponseDto(updatedTable);
+        BilliardTableResponseDto result = convertToResponseDto(updatedTable);
+        auditService.record("UPDATE", AUDIT_ENTITY, table.getTableCode(), before, result);
+        return result;
     }
 
     /**
@@ -236,6 +249,7 @@ public class BilliardTableService {
                     SystemLanguage.getMessage("table_not_found")
                 )
             );
+        BilliardTableResponseDto before = convertToResponseDto(table);
         table.setPricePerHour(newPricePerHour);
         if (table.getTableStatus() == TableStatus.OCCUPIED) {
             throw new ResourceNotFoundException(
@@ -249,12 +263,15 @@ public class BilliardTableService {
             );
         }
 
+        BilliardTableResponseDto result;
         try {
             BilliardTable updatedTable = billiardTableRepository.save(table);
-            return convertToResponseDto(updatedTable);
+            result = convertToResponseDto(updatedTable);
         } catch (Exception e) {
             throw new ResourceNotFoundException("Failed to update table price");
         }
+        auditService.record("UPDATE_PRICE", AUDIT_ENTITY, tableCode, before, result);
+        return result;
     }
 
     /**
@@ -266,6 +283,7 @@ public class BilliardTableService {
      *
      * @param tableCode The unique code of the billiard table to mark as deleted.
      */
+    @Transactional
     public void delete(String tableCode) {
         setTableToDelete(tableCode);
     }
@@ -288,6 +306,7 @@ public class BilliardTableService {
      * @throws ResourceNotFoundException if the table is occupied while trying to set maintenance,
      *         status doesn't change, or table does not exist.
      */
+    @Transactional
     public BilliardTableResponseDto setStatusTable(String tableCode, TableStatus newStatus) {
         BilliardTable table = billiardTableRepository.findByTableCodeAndIsDeletedFalse(tableCode)
                 .orElseThrow(() -> new ResourceNotFoundException(SystemLanguage.getMessage("table_not_found")));
@@ -316,9 +335,12 @@ public class BilliardTableService {
             );
         }
 
+        BilliardTableResponseDto before = convertToResponseDto(table);
         table.setTableStatus(newStatus);
         BilliardTable savedTable = billiardTableRepository.save(table);
-        return convertToResponseDto(savedTable);
+        BilliardTableResponseDto result = convertToResponseDto(savedTable);
+        auditService.record("UPDATE_STATUS", AUDIT_ENTITY, tableCode, before, result);
+        return result;
     }
 
     /**
@@ -359,7 +381,9 @@ public class BilliardTableService {
             .orElseThrow(() ->
                 new ResourceNotFoundException("Table not found")
             );
+        BilliardTableResponseDto before = convertToResponseDto(targetTable);
         targetTable.setIsDeleted(true);
         billiardTableRepository.save(targetTable);
+        auditService.record("DELETE", AUDIT_ENTITY, tableCode, before, null);
     }
 }
