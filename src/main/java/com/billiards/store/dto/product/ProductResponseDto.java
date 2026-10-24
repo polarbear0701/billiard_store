@@ -3,6 +3,8 @@ package com.billiards.store.dto.product;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +25,9 @@ public class ProductResponseDto {
     private int quantity;
     @Schema(description = "Unit price in VND", example = "15000")
     private BigDecimal price;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @Schema(description = "Buy-in price per unit in VND. Only returned to ADMIN accounts (the field is absent for STAFF), and absent when the cost has not been set yet", example = "10000")
+    private BigDecimal costPrice;
     @Schema(description = "When the record was created (ISO-8601 date-time in the store's timezone)", example = "2026-10-19T18:30:00")
     private LocalDateTime createdAt;
     @Schema(description = "When the record was last changed (ISO-8601 date-time in the store's timezone); null if never changed", example = "2026-10-19T19:00:00")

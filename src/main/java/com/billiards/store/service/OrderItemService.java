@@ -79,6 +79,9 @@ public class OrderItemService {
 			orderItem.setProductCode(line.getProductCode());
 			orderItem.setQuantity(line.getQuantity());
 			orderItem.setPrice(productResponseDto.getPrice());
+			orderItem.setCostPrice(
+				productService.getProductCost(line.getProductCode())
+			);
 
 			productService.updateStock(
 				line.getProductCode(),
@@ -375,6 +378,9 @@ public class OrderItemService {
 
 		orderItem.setPrice(
 			productService.getProductPrice(requestDto.getProductCode())
+		);
+		orderItem.setCostPrice(
+			productService.getProductCost(requestDto.getProductCode())
 		);
 
 		OrderItem updatedOrderItem = orderItemRepository.save(orderItem);

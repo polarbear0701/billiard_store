@@ -1,6 +1,8 @@
 package com.billiards.store.service;
 
 import com.billiards.store.common.base.PagedResponse;
+import com.billiards.store.common.enumerated.Role;
+import com.billiards.store.common.exception.BadRequestException;
 import com.billiards.store.common.exception.ResourceNotFoundException;
 import com.billiards.store.common.util.CodeGeneratorUtil;
 import com.billiards.store.common.util.SystemLanguage;
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,6 +61,8 @@ public class ProductService {
 		product.setName(requestDto.getName());
 		product.setQuantity(requestDto.getQuantity());
 		product.setPrice(requestDto.getPrice());
+		validateCostPrice(requestDto.getCostPrice());
+		product.setCostPrice(requestDto.getCostPrice());
 
 		Product savedProduct = productRepository.save(product);
 		ProductResponseDto result = convertToResponseDto(savedProduct);
@@ -67,7 +73,7 @@ public class ProductService {
 			null,
 			result
 		);
-		return result;
+		return visibleToCaller(result);
 	}
 
 	/**
@@ -103,7 +109,7 @@ public class ProductService {
 					SystemLanguage.getMessage("product_not_found")
 				)
 			);
-		return convertToResponseDto(product);
+		return visibleToCaller(convertToResponseDto(product));
 	}
 
 	/**
@@ -121,7 +127,7 @@ public class ProductService {
 					SystemLanguage.getMessage("product_not_found")
 				)
 			);
-		return convertToResponseDto(product);
+		return visibleToCaller(convertToResponseDto(product));
 	}
 
 	/**
@@ -134,6 +140,7 @@ public class ProductService {
 			.findByIsDeletedFalse()
 			.stream()
 			.map(this::convertToResponseDto)
+			.map(this::visibleToCaller)
 			.collect(Collectors.toList());
 	}
 
@@ -148,6 +155,7 @@ public class ProductService {
 			productRepository
 				.findByIsDeletedFalse(pageable)
 				.map(this::convertToResponseDto)
+				.map(this::visibleToCaller)
 		);
 	}
 
@@ -179,6 +187,10 @@ public class ProductService {
 		product.setName(requestDto.getName());
 		product.setQuantity(requestDto.getQuantity());
 		product.setPrice(requestDto.getPrice());
+		if (requestDto.getCostPrice() != null) {
+			validateCostPrice(requestDto.getCostPrice());
+			product.setCostPrice(requestDto.getCostPrice());
+		}
 
 		Product updatedProduct = productRepository.save(product);
 		ProductResponseDto result = convertToResponseDto(updatedProduct);
@@ -189,7 +201,7 @@ public class ProductService {
 			before,
 			result
 		);
-		return result;
+		return visibleToCaller(result);
 	}
 
 	/**
@@ -298,6 +310,58 @@ public class ProductService {
 	}
 
 	/**
+	 * Retrieves the buy-in (cost) price of a product, e.g. to copy it onto an order line.
+	 *
+	 * @param productCode The unique identifier of the product
+	 * @return The cost price, or null if it has not been set
+	 * @throws ResourceNotFoundException if the product is not found
+	 */
+	public BigDecimal getProductCost(String productCode) {
+		return productRepository
+			.findByProductCodeAndIsDeletedFalse(productCode)
+			.orElseThrow(() ->
+				new ResourceNotFoundException(
+					SystemLanguage.getMessage("product_not_found")
+				)
+			)
+			.getCostPrice();
+	}
+
+	/**
+	 * Sets the buy-in (cost) price of a product. Orders already placed keep the cost they were
+	 * created with; only new orders use the new value.
+	 *
+	 * @param productCode The product code of the product
+	 * @param newCostPrice The new cost per unit in VND, 0 or more
+	 * @throws BadRequestException if the cost is missing or negative
+	 * @throws ResourceNotFoundException if the product is not found
+	 */
+	@Transactional
+	public void updateCostPrice(String productCode, BigDecimal newCostPrice) {
+		if (newCostPrice == null) {
+			throw new BadRequestException("Cost price is required");
+		}
+		validateCostPrice(newCostPrice);
+		Product product = productRepository
+			.findByProductCodeAndIsDeletedFalse(productCode)
+			.orElseThrow(() ->
+				new ResourceNotFoundException(
+					SystemLanguage.getMessage("product_not_found")
+				)
+			);
+		ProductResponseDto before = convertToResponseDto(product);
+		product.setCostPrice(newCostPrice);
+		productRepository.save(product);
+		auditService.record(
+			"UPDATE_COST_PRICE",
+			AUDIT_ENTITY,
+			productCode,
+			before,
+			convertToResponseDto(product)
+		);
+	}
+
+	/**
 	 * Updates the price of a product.
 	 * Validates that the new price is greater than 1000; throws an exception otherwise.
 	 *
@@ -347,12 +411,38 @@ public class ProductService {
 		auditService.record("DELETE", AUDIT_ENTITY, productCode, before, null);
 	}
 
+	private void validateCostPrice(BigDecimal costPrice) {
+		if (costPrice != null && costPrice.signum() < 0) {
+			throw new BadRequestException("Cost price cannot be negative");
+		}
+	}
+
+	/**
+	 * Cost prices are for admins only. Everyone else gets the same response without the field.
+	 * The audit log is written from the full DTO before this is applied.
+	 */
+	private ProductResponseDto visibleToCaller(ProductResponseDto dto) {
+		Authentication authentication =
+			SecurityContextHolder.getContext().getAuthentication();
+		boolean admin =
+			authentication != null &&
+			authentication
+				.getAuthorities()
+				.stream()
+				.anyMatch(a -> a.getAuthority().equals("ROLE_" + Role.ADMIN.name()));
+		if (!admin) {
+			dto.setCostPrice(null);
+		}
+		return dto;
+	}
+
 	private ProductResponseDto convertToResponseDto(Product product) {
 		ProductResponseDto dto = new ProductResponseDto();
 		dto.setProductCode(product.getProductCode());
 		dto.setName(product.getName());
 		dto.setQuantity(product.getQuantity());
 		dto.setPrice(product.getPrice());
+		dto.setCostPrice(product.getCostPrice());
 		dto.setCreatedAt(product.getCreatedAt());
 		dto.setUpdatedAt(product.getUpdatedAt());
 		dto.setCreatedBy(product.getCreatedBy());

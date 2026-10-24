@@ -30,4 +30,7 @@ public class OrderItem extends BaseEntity {
     private int quantity;
     
     private BigDecimal price;
+
+    /** The product's cost price when this line was ordered; null when it was not known. */
+    private BigDecimal costPrice;
 }

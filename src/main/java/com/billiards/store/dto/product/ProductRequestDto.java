@@ -20,4 +20,6 @@ public class ProductRequestDto {
     private int quantity;
     @Schema(description = "Unit price in VND", example = "15000", requiredMode = Schema.RequiredMode.REQUIRED)
     private BigDecimal price;
+    @Schema(description = "Buy-in price per unit in VND, 0 or more. Optional: leave out if not known yet. When updating, leaving it out keeps the current cost", example = "10000")
+    private BigDecimal costPrice;
 }

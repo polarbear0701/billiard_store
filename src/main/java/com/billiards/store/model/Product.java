@@ -27,4 +27,7 @@ public class Product extends BaseEntity {
     private int quantity;
     
     private BigDecimal price;
+
+    /** Buy-in price per unit; null when not known yet. */
+    private BigDecimal costPrice;
 }

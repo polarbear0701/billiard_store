@@ -1,5 +1,6 @@
 package com.billiards.store.controller;
 
+import java.math.BigDecimal;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +45,7 @@ public class ProductController {
 	@Operation(
 		operationId = "product_create",
 		summary = "Create a product",
-		description = "Creates a product with a generated code such as `PRD000001`. Access: ADMIN only."
+		description = "Creates a product with a generated code such as `PRD000001`. The buy-in `costPrice` is optional. Access: ADMIN only."
 	)
 	@PostMapping("/create")
 	public ResponseEntity<SuccessResponse<ProductResponseDto>> create(
@@ -148,6 +149,28 @@ public class ProductController {
 					"Product name has been changed to %s",
 					newProductName
 				),
+				LocalDateTime.now()
+			)
+		);
+	}
+
+	@Operation(
+		operationId = "product_updateProductCostPrice",
+		summary = "Change a product's buy-in (cost) price",
+		description = "Sets what one unit costs you, in VND (0 or more). Orders already placed keep the cost they had when they were created; only new orders use the new value. The cost is never shown to STAFF. Access: ADMIN only."
+	)
+	@PutMapping("/update/cost/{productCode}")
+	public ResponseEntity<SuccessResponse<Void>> updateProductCostPrice(
+		@Parameter(description = "Product code", example = "PRD000001") @PathVariable String productCode,
+		@Parameter(description = "New cost per unit in VND, 0 or more", example = "10000") @RequestParam BigDecimal newCostPrice
+	) {
+		productService.updateCostPrice(productCode, newCostPrice);
+
+		return ResponseEntity.ok(
+			new SuccessResponse<>(
+				HttpStatus.OK.value(),
+				SystemLanguage.getMessage("update_success"),
+				null,
 				LocalDateTime.now()
 			)
 		);
